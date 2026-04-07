@@ -735,6 +735,14 @@ td:hover .task-bar { filter: brightness(1.1); }
 <!-- ══ TOASTS ═════════════════════════════════════════ -->
 <div class="toast-wrap" id="toastWrap"></div>
 
+<!-- ══ ENV CONFIG (override per environment) ════════════ -->
+<script>
+  // Equivalent to: os.getenv("SERVICE_URL", "http://localhost:3000")
+  // Override this block in each environment without touching app code.
+  window.__ENV__ = window.__ENV__ || {};
+  window.__ENV__.SERVICE_URL = window.__ENV__.SERVICE_URL || 'http://localhost:3000';
+</script>
+
 <script>
 /* ════════════════════════════════════════════════════════
    CONFIG & STATE
@@ -749,7 +757,7 @@ const TOTAL_WEEKS   = 53;
 let weeksData      = [];
 let currentIsoWeek = 0;
 let activeView     = 'cards';   // 'cards' | 'table'
-const API_URL      = 'http://localhost:3002/tasks';
+const API_URL      = (window.__ENV__.SERVICE_URL).replace(/\/$/, '') + '/tasks';
 let tasksList      = [];
 
 /* ════════════════════════════════════════════════════════
