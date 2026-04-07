@@ -1,0 +1,1116 @@
+<!DOCTYPE html>
+<!-- saved from url=(0023)http://10.10.2.63:8081/ -->
+<html lang="es" data-theme="light"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plan de Trabajo 2026 — Gantt Dinámico</title>
+    <meta name="description" content="Planificador Gantt anual interactivo con temas y gestión de tareas por semana.">
+    <link rel="preconnect" href="https://fonts.googleapis.com/">
+    <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin="">
+    <link href="./Plan de Trabajo 2026 — Gantt Dinámico_files/css2" rel="stylesheet">
+    <style>
+/* ════════════════════════════════════════════════════════
+   DESIGN TOKENS
+════════════════════════════════════════════════════════ */
+:root {
+    --font: 'Inter', system-ui, sans-serif;
+    --radius: 12px;
+    --radius-sm: 8px;
+    --radius-xs: 5px;
+    --transition: 0.22s ease;
+    --shadow: 0 1px 8px rgba(0,0,0,0.07);
+    --shadow-md: 0 4px 20px rgba(0,0,0,0.12);
+}
+
+/* ─── LIGHT ─────────────────────────────────────────── */
+[data-theme="light"] {
+    --bg:          #f0f4f8;
+    --surface:     #ffffff;
+    --surface-2:   #f7f9fc;
+    --border:      #e2e8f0;
+    --text:        #1a202c;
+    --text-muted:  #718096;
+    --accent:      #4f46e5;
+    --accent-h:    #4338ca;
+    --accent-fg:   #ffffff;
+    --hdr-bg:      #2d3748;
+    --hdr-fg:      #ffffff;
+    --today-bg:    rgba(251,191,36,.2);
+    --today-bd:    #f59e0b;
+    --danger:      #e53e3e;
+    --m0:#dbeafe;--m1:#ede9fe;--m2:#dcfce7;--m3:#fef9c3;
+    --m4:#ccfbf1;--m5:#ffe4e6;--m6:#fbcfe8;--m7:#d1fae5;
+    --m8:#fef3c7;--m9:#e0e7ff;--m10:#ccfbf1;--m11:#fecaca;
+}
+
+/* ─── DARK ───────────────────────────────────────────── */
+[data-theme="dark"] {
+    --bg:          #0f1117;
+    --surface:     #1a1d27;
+    --surface-2:   #12151e;
+    --border:      #2d3148;
+    --text:        #e2e8f0;
+    --text-muted:  #7c83a0;
+    --accent:      #818cf8;
+    --accent-h:    #6366f1;
+    --accent-fg:   #0f1117;
+    --hdr-bg:      #1e2235;
+    --hdr-fg:      #c7d2fe;
+    --today-bg:    rgba(251,191,36,.12);
+    --today-bd:    #d97706;
+    --danger:      #fc8181;
+    --m0:#1e3a5f;--m1:#2e1a4a;--m2:#14362a;--m3:#3b2f00;
+    --m4:#0d3330;--m5:#3b1a1e;--m6:#3b1535;--m7:#0d3326;
+    --m8:#3b2d00;--m9:#1c1f4a;--m10:#0d3330;--m11:#3b1919;
+}
+
+/* ─── SEPIA ──────────────────────────────────────────── */
+[data-theme="sepia"] {
+    --bg:          #f4efe8;
+    --surface:     #fdf8f2;
+    --surface-2:   #f0ebe3;
+    --border:      #d6c9b4;
+    --text:        #3b2f1e;
+    --text-muted:  #8a7560;
+    --accent:      #8b5e3c;
+    --accent-h:    #6d4a2f;
+    --accent-fg:   #fdf8f2;
+    --hdr-bg:      #5c3d2e;
+    --hdr-fg:      #fdf8f2;
+    --today-bg:    rgba(210,140,50,.18);
+    --today-bd:    #c8872a;
+    --danger:      #b84040;
+    --m0:#d6e4ec;--m1:#e4d6e8;--m2:#d6e8d8;--m3:#ece8d6;
+    --m4:#d6e8e4;--m5:#e8d6d6;--m6:#e8d6e0;--m7:#d6e8de;
+    --m8:#e8e0d6;--m9:#dcd6e8;--m10:#d6e8e4;--m11:#e8d8d6;
+}
+
+/* ─── HIGH CONTRAST ──────────────────────────────────── */
+[data-theme="contrast"] {
+    --bg:          #000;
+    --surface:     #0a0a0a;
+    --surface-2:   #111;
+    --border:      #fff;
+    --text:        #fff;
+    --text-muted:  #ccc;
+    --accent:      #ff0;
+    --accent-h:    #e6e600;
+    --accent-fg:   #000;
+    --hdr-bg:      #000;
+    --hdr-fg:      #ff0;
+    --today-bg:    rgba(255,255,0,.22);
+    --today-bd:    #ff0;
+    --danger:      #f44;
+    --m0:#001a33;--m1:#1a0033;--m2:#001a0d;--m3:#331a00;
+    --m4:#001a1a;--m5:#33000d;--m6:#33001a;--m7:#001a0d;
+    --m8:#332900;--m9:#0a0033;--m10:#001a1a;--m11:#33000d;
+}
+
+/* ════════════════════════════════════════════════════════
+   RESET & BASE
+════════════════════════════════════════════════════════ */
+*, *::before, *::after { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+    font-family: var(--font);
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    transition: background var(--transition), color var(--transition);
+    min-height: 100vh;
+    /* Mobile: thin padding */
+    padding: 12px 14px;
+}
+
+/* ════════════════════════════════════════════════════════
+   APP HEADER
+════════════════════════════════════════════════════════ */
+.app-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+    gap: 10px;
+}
+.app-title { display: flex; flex-direction: column; }
+.app-title h1 {
+    margin: 0;
+    font-size: clamp(1rem, 4vw, 1.4rem);
+    font-weight: 700;
+    letter-spacing: -.4px;
+}
+.app-title .subtitle {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 2px;
+}
+
+/* ════════════════════════════════════════════════════════
+   THEME SWITCHER
+════════════════════════════════════════════════════════ */
+.theme-switcher {
+    display: flex;
+    gap: 4px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 4px 6px;
+    border-radius: 50px;
+    box-shadow: var(--shadow);
+    flex-shrink: 0;
+}
+.theme-btn {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    cursor: pointer;
+    font-size: 13px;
+    display: flex; align-items: center; justify-content: center;
+    transition: transform .15s, border-color .15s;
+    background: none; padding: 0;
+}
+.theme-btn:hover { transform: scale(1.15); }
+.theme-btn.active { border-color: var(--accent); }
+
+/* ════════════════════════════════════════════════════════
+   CONTROLS — MOBILE FIRST (single column)
+════════════════════════════════════════════════════════ */
+.controls {
+    background: var(--surface);
+    padding: 14px;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border);
+    margin-bottom: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.ctrl-row { display: flex; gap: 8px; }
+.ctrl-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+}
+.ctrl-label {
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: .5px;
+}
+input[type="text"],
+input[type="number"] {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-size: 14px;
+    font-family: var(--font);
+    background: var(--surface-2);
+    color: var(--text);
+    -webkit-appearance: none;
+    transition: border-color .15s, box-shadow .15s;
+}
+input[type="text"]:focus,
+input[type="number"]:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent);
+}
+.ctrl-color-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+input[type="color"] {
+    width: 44px; height: 44px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 3px;
+    background: var(--surface-2);
+    cursor: pointer;
+    flex-shrink: 0;
+}
+.btn-add {
+    width: 100%;
+    padding: 13px;
+    background: var(--accent);
+    color: var(--accent-fg);
+    border: none;
+    border-radius: var(--radius-sm);
+    font-size: 15px;
+    font-weight: 600;
+    font-family: var(--font);
+    cursor: pointer;
+    transition: background .18s, transform .12s, box-shadow .18s;
+    letter-spacing: .2px;
+    box-shadow: 0 2px 8px color-mix(in srgb, var(--accent) 30%, transparent);
+}
+.btn-add:hover {
+    background: var(--accent-h);
+    box-shadow: 0 4px 14px color-mix(in srgb, var(--accent) 38%, transparent);
+}
+.btn-add:active { transform: scale(.98); }
+
+/* ════════════════════════════════════════════════════════
+   VIEW TOGGLE (mobile only)
+════════════════════════════════════════════════════════ */
+.view-toggle {
+    display: flex;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    margin-bottom: 14px;
+    box-shadow: var(--shadow);
+}
+.view-toggle-btn {
+    flex: 1;
+    padding: 9px;
+    border: none;
+    background: transparent;
+    font-family: var(--font);
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: background .15s, color .15s;
+    display: flex; align-items: center; justify-content: center; gap: 5px;
+}
+.view-toggle-btn.active {
+    background: var(--accent);
+    color: var(--accent-fg);
+    font-weight: 600;
+}
+
+/* ════════════════════════════════════════════════════════
+   ★ CARD VIEW (mobile default)
+════════════════════════════════════════════════════════ */
+#cardView {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+#tableView { display: none; }
+
+.task-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px;
+    box-shadow: var(--shadow);
+    animation: fadeUp .22s ease both;
+    position: relative;
+    overflow: hidden;
+}
+@keyframes fadeUp {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+/* left colored accent strip */
+.task-card::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 4px;
+    background: var(--task-color, var(--accent));
+    border-radius: var(--radius) 0 0 var(--radius);
+}
+
+.card-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+.card-name {
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1.35;
+    flex: 1;
+    padding-left: 6px;
+}
+.card-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+}
+
+/* Color swatch button on card */
+.card-color-btn {
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    border: 2px solid var(--border);
+    cursor: pointer;
+    position: relative;
+    flex-shrink: 0;
+    transition: transform .12s, box-shadow .12s;
+    box-shadow: inset 0 0 0 2px rgba(0,0,0,.08);
+}
+.card-color-btn:hover { transform: scale(1.15); box-shadow: var(--shadow-md); }
+.card-color-btn input[type="color"] {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    opacity: 0; cursor: pointer;
+    padding: 0; border: none;
+}
+
+.card-delete {
+    background: none; border: none;
+    color: var(--danger); font-size: 18px;
+    cursor: pointer; padding: 0 2px;
+    opacity: .55; transition: opacity .15s, transform .12s;
+    font-family: var(--font); line-height: 1;
+}
+.card-delete:hover { opacity: 1; transform: scale(1.2); }
+
+/* Timeline bar */
+.card-timeline {
+    margin-bottom: 6px;
+}
+.timeline-track {
+    height: 8px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 99px;
+    overflow: hidden;
+    position: relative;
+}
+.timeline-fill {
+    position: absolute;
+    top: 0; bottom: 0;
+    border-radius: 99px;
+    transition: width .3s ease;
+}
+/* "today" marker on track */
+.timeline-today-marker {
+    position: absolute;
+    top: -2px; bottom: -2px;
+    width: 2px;
+    background: var(--today-bd);
+    border-radius: 1px;
+    z-index: 2;
+}
+
+.card-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 6px;
+}
+.card-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    padding: 2px 7px;
+    border-radius: 99px;
+    font-size: 10px;
+    font-weight: 500;
+}
+
+/* ════════════════════════════════════════════════════════
+   EMPTY STATE (shared)
+════════════════════════════════════════════════════════ */
+.empty-state {
+    text-align: center;
+    padding: 48px 20px;
+    color: var(--text-muted);
+}
+.empty-state .icon { font-size: 42px; margin-bottom: 10px; }
+.empty-state p { margin: 0; font-size: 14px; }
+
+/* ════════════════════════════════════════════════════════
+   TABLE VIEW (desktop Gantt) — hidden on mobile by default
+════════════════════════════════════════════════════════ */
+.table-container {
+    overflow-x: auto;
+    background: var(--surface);
+    padding: 12px;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border);
+    -webkit-overflow-scrolling: touch;
+}
+.table-container::-webkit-scrollbar { height: 5px; }
+.table-container::-webkit-scrollbar-track { background: var(--surface-2); }
+.table-container::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+table { border-collapse: collapse; width: 100%; }
+th, td {
+    border: 1px solid var(--border);
+    text-align: center;
+    height: 32px;
+    min-width: 26px;
+    font-size: 11px;
+    color: var(--text);
+}
+.month-header {
+    font-weight: 700; font-size: 12px;
+    padding: 5px 4px;
+}
+.week-header {
+    font-size: 10px; color: var(--text-muted); font-weight: 500;
+}
+.task-name-col {
+    width: 200px; min-width: 160px;
+    text-align: left; padding: 5px 10px;
+    font-size: 12px;
+    position: sticky; left: 0;
+    background: var(--surface); z-index: 10;
+    font-weight: 500;
+    transition: background var(--transition);
+}
+th.task-name-col {
+    background: var(--hdr-bg); color: var(--hdr-fg);
+    z-index: 11; font-weight: 700; font-size: 12px;
+}
+tbody tr { animation: fadeUp .2s ease both; }
+tbody tr:hover .task-name-col { background: var(--surface-2); }
+.task-bar {
+    border-radius: 4px;
+    box-shadow: 0 1px 3px rgba(0,0,0,.15);
+    margin: 3px auto;
+    height: 18px; width: 92%;
+    display: block;
+    transition: filter .15s;
+}
+td:hover .task-bar { filter: brightness(1.1); }
+.is-today {
+    background-color: var(--today-bg) !important;
+    border-left-color: var(--today-bd) !important;
+    border-right-color: var(--today-bd) !important;
+    border-left-width: 2px !important;
+    border-right-width: 2px !important;
+}
+.task-cell-content {
+    display: flex; align-items: center;
+    gap: 5px; justify-content: space-between;
+}
+.task-label { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tbl-color-swatch {
+    width: 14px; height: 14px; border-radius: 3px;
+    border: 1.5px solid rgba(0,0,0,.12); flex-shrink: 0;
+    cursor: pointer; position: relative;
+    transition: transform .12s;
+}
+.tbl-color-swatch:hover { transform: scale(1.2); }
+.tbl-color-swatch input[type="color"] {
+    position: absolute; inset: 0; opacity: 0;
+    cursor: pointer; padding: 0; border: none;
+    width: 100%; height: 100%;
+}
+.delete-btn {
+    color: var(--danger); cursor: pointer; font-weight: 700;
+    font-size: 13px; opacity: .55;
+    transition: opacity .15s, transform .12s;
+    background: none; border: none; padding: 0 2px;
+    font-family: var(--font);
+}
+.delete-btn:hover { opacity: 1; transform: scale(1.2); }
+
+/* ════════════════════════════════════════════════════════
+   TOAST
+════════════════════════════════════════════════════════ */
+.toast-wrap {
+    position: fixed; bottom: 20px; right: 16px;
+    z-index: 999; display: flex; flex-direction: column; gap: 8px;
+    /* keep toasts away from system nav on mobile */
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+.toast {
+    background: var(--hdr-bg); color: var(--hdr-fg);
+    padding: 10px 16px; border-radius: var(--radius-sm);
+    font-size: 13px; font-weight: 500;
+    box-shadow: var(--shadow-md);
+    animation: toastIn .22s ease;
+    border-left: 3px solid var(--accent);
+    max-width: 90vw;
+}
+@keyframes toastIn {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ════════════════════════════════════════════════════════
+   RESPONSIVE — tablet / desktop
+════════════════════════════════════════════════════════ */
+@media (min-width: 760px) {
+    body { padding: 20px 24px; }
+
+    /* Controls: row layout */
+    .controls {
+        flex-direction: row;
+        align-items: flex-end;
+        flex-wrap: wrap;
+    }
+    .ctrl-group { min-width: 120px; }
+    .btn-add { width: auto; padding: 10px 22px; font-size: 14px; }
+
+    /* Hide view toggle — always show table */
+    .view-toggle { display: none; }
+
+    /* Show table, hide cards */
+    #cardView  { display: none !important; }
+    #tableView { display: block !important; }
+}
+    </style>
+</head>
+<body>
+
+<!-- ══ HEADER ══════════════════════════════════════════ -->
+<header class="app-header">
+    <div class="app-title">
+        <h1>📅 Plan 2026</h1>
+        <span class="subtitle" id="weekInfo">Semana 13 de 2026</span>
+    </div>
+    <div class="theme-switcher" role="group" aria-label="Selector de tema">
+        <button class="theme-btn active" data-theme-val="light" title="Claro" onclick="setTheme(&#39;light&#39;)">☀️</button>
+        <button class="theme-btn" data-theme-val="dark" title="Oscuro" onclick="setTheme(&#39;dark&#39;)">🌙</button>
+        <button class="theme-btn" data-theme-val="sepia" title="Sepia" onclick="setTheme(&#39;sepia&#39;)">📜</button>
+        <button class="theme-btn" data-theme-val="contrast" title="Alto contraste" onclick="setTheme(&#39;contrast&#39;)">⬛</button>
+    </div>
+</header>
+
+<!-- ══ CONTROLS ════════════════════════════════════════ -->
+<section class="controls" aria-label="Agregar tarea">
+    <!-- Row 1: name (full width on mobile) -->
+    <div class="ctrl-group" style="flex: 1 1 200px;">
+        <span class="ctrl-label">Nombre de tarea</span>
+        <input type="text" id="taskName" placeholder="Ej. COMPAQi — instalación" autocomplete="off">
+    </div>
+    <!-- Row 2: start + duration on same row -->
+    <div class="ctrl-row" style="flex: 1 1 200px;">
+        <div class="ctrl-group">
+            <span class="ctrl-label">S. Inicio</span>
+            <input type="number" id="startWeek" placeholder="1–53" min="1" max="53">
+        </div>
+        <div class="ctrl-group">
+            <span class="ctrl-label">Duración</span>
+            <input type="number" id="duration" placeholder="Semanas" min="1">
+        </div>
+    </div>
+    <!-- Row 3: color + button -->
+    <div class="ctrl-color-row" style="flex: 1 1 140px;">
+        <div class="ctrl-group" style="flex-shrink:0;">
+            <span class="ctrl-label">Color</span>
+            <input type="color" id="taskColor" value="#4f46e5" title="Color de la tarea">
+        </div>
+        <div class="ctrl-group">
+            <span class="ctrl-label">&nbsp;</span>
+            <button class="btn-add" onclick="addTask()" id="btnAdd">＋ Agregar tarea</button>
+        </div>
+    </div>
+</section>
+
+<!-- ══ VIEW TOGGLE (mobile only) ══════════════════════ -->
+<div class="view-toggle" id="viewToggle" role="tablist">
+    <button class="view-toggle-btn active" id="btnCards" onclick="switchView(&#39;cards&#39;)" role="tab">
+        ☰ Tarjetas
+    </button>
+    <button class="view-toggle-btn" id="btnTable" onclick="switchView(&#39;table&#39;)" role="tab">
+        📊 Gantt
+    </button>
+</div>
+
+<!-- ══ CARD VIEW (mobile default) ════════════════════ -->
+<section id="cardView" aria-label="Vista de tarjetas"><article class="task-card" style="--task-color: #a78bfa;">
+            <div class="card-header">
+                <span class="card-name">Sistema de tickets - bien implementado</span>
+                <div class="card-actions">
+                    <span class="card-color-btn" style="background:#a78bfa" title="Cambiar color">
+                        <input type="color" value="#a78bfa" data-id="1">
+                    </span>
+                    <button class="card-delete" data-id="1" title="Eliminar">×</button>
+                </div>
+            </div>
+
+            <div class="card-timeline">
+                <div class="timeline-track">
+                    <div class="timeline-fill" style="left:11.3%;width:7.5%;background:#a78bfa;opacity:.85;"></div>
+                    <div class="timeline-today-marker" style="left:22.6%"></div>
+                </div>
+            </div>
+
+            <div class="card-meta">
+                <span>S7 → S10</span>
+                <div style="display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end">
+                    <span class="card-badge">⏱ 4 sem.</span>
+                    
+                </div>
+            </div>
+        </article><article class="task-card" style="--task-color: #3b82f6;">
+            <div class="card-header">
+                <span class="card-name">COMPAQi - instalación de servidor</span>
+                <div class="card-actions">
+                    <span class="card-color-btn" style="background:#3b82f6" title="Cambiar color">
+                        <input type="color" value="#3b82f6" data-id="2">
+                    </span>
+                    <button class="card-delete" data-id="2" title="Eliminar">×</button>
+                </div>
+            </div>
+
+            <div class="card-timeline">
+                <div class="timeline-track">
+                    <div class="timeline-fill" style="left:18.9%;width:3.8%;background:#3b82f6;opacity:.85;"></div>
+                    <div class="timeline-today-marker" style="left:22.6%"></div>
+                </div>
+            </div>
+
+            <div class="card-meta">
+                <span>S11 → S12</span>
+                <div style="display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end">
+                    <span class="card-badge">⏱ 2 sem.</span>
+                    
+                </div>
+            </div>
+        </article><article class="task-card" style="--task-color: #10b981;">
+            <div class="card-header">
+                <span class="card-name">Active directory - Configuración</span>
+                <div class="card-actions">
+                    <span class="card-color-btn" style="background:#10b981" title="Cambiar color">
+                        <input type="color" value="#10b981" data-id="3">
+                    </span>
+                    <button class="card-delete" data-id="3" title="Eliminar">×</button>
+                </div>
+            </div>
+
+            <div class="card-timeline">
+                <div class="timeline-track">
+                    <div class="timeline-fill" style="left:0.0%;width:32.1%;background:#10b981;opacity:.85;"></div>
+                    <div class="timeline-today-marker" style="left:22.6%"></div>
+                </div>
+            </div>
+
+            <div class="card-meta">
+                <span>S1 → S17</span>
+                <div style="display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end">
+                    <span class="card-badge">⏱ 17 sem.</span>
+                    <span class="card-badge" style="color:var(--accent);border-color:var(--accent)">● Activa</span>
+                </div>
+            </div>
+        </article><article class="task-card" style="--task-color: #f59e0b;">
+            <div class="card-header">
+                <span class="card-name">Habilitación pantalla de Soldadura</span>
+                <div class="card-actions">
+                    <span class="card-color-btn" style="background:#f59e0b" title="Cambiar color">
+                        <input type="color" value="#f59e0b" data-id="4">
+                    </span>
+                    <button class="card-delete" data-id="4" title="Eliminar">×</button>
+                </div>
+            </div>
+
+            <div class="card-timeline">
+                <div class="timeline-track">
+                    <div class="timeline-fill" style="left:20.8%;width:37.7%;background:#f59e0b;opacity:.85;"></div>
+                    <div class="timeline-today-marker" style="left:22.6%"></div>
+                </div>
+            </div>
+
+            <div class="card-meta">
+                <span>S12 → S31</span>
+                <div style="display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end">
+                    <span class="card-badge">⏱ 20 sem.</span>
+                    <span class="card-badge" style="color:var(--accent);border-color:var(--accent)">● Activa</span>
+                </div>
+            </div>
+        </article></section>
+
+<!-- ══ TABLE VIEW (Gantt) ════════════════════════════ -->
+<div id="tableView">
+    <div class="table-container">
+        <table id="ganttTable">
+            <thead id="ganttHead"><tr><th class="task-name-col" rowspan="2">Hito / Tarea</th><th class="month-header" colspan="5" style="background-color: var(--m0);">Enero</th><th class="month-header" colspan="4" style="background-color: var(--m1);">Febrero</th><th class="month-header" colspan="4" style="background-color: var(--m2);">Marzo</th><th class="month-header" colspan="5" style="background-color: var(--m3);">Abril</th><th class="month-header" colspan="4" style="background-color: var(--m4);">Mayo</th><th class="month-header" colspan="4" style="background-color: var(--m5);">Junio</th><th class="month-header" colspan="5" style="background-color: var(--m6);">Julio</th><th class="month-header" colspan="4" style="background-color: var(--m7);">Agosto</th><th class="month-header" colspan="4" style="background-color: var(--m8);">Septiembre</th><th class="month-header" colspan="5" style="background-color: var(--m9);">Octubre</th><th class="month-header" colspan="4" style="background-color: var(--m10);">Noviembre</th><th class="month-header" colspan="5" style="background-color: var(--m11);">Diciembre</th></tr><tr><th class="week-header" style="background-color: var(--m0);">1</th><th class="week-header" style="background-color: var(--m0);">2</th><th class="week-header" style="background-color: var(--m0);">3</th><th class="week-header" style="background-color: var(--m0);">4</th><th class="week-header" style="background-color: var(--m0);">5</th><th class="week-header" style="background-color: var(--m1);">6</th><th class="week-header" style="background-color: var(--m1);">7</th><th class="week-header" style="background-color: var(--m1);">8</th><th class="week-header" style="background-color: var(--m1);">9</th><th class="week-header" style="background-color: var(--m2);">10</th><th class="week-header" style="background-color: var(--m2);">11</th><th class="week-header" style="background-color: var(--m2);">12</th><th class="week-header is-today" style="background-color: var(--m2);">13</th><th class="week-header" style="background-color: var(--m3);">14</th><th class="week-header" style="background-color: var(--m3);">15</th><th class="week-header" style="background-color: var(--m3);">16</th><th class="week-header" style="background-color: var(--m3);">17</th><th class="week-header" style="background-color: var(--m3);">18</th><th class="week-header" style="background-color: var(--m4);">19</th><th class="week-header" style="background-color: var(--m4);">20</th><th class="week-header" style="background-color: var(--m4);">21</th><th class="week-header" style="background-color: var(--m4);">22</th><th class="week-header" style="background-color: var(--m5);">23</th><th class="week-header" style="background-color: var(--m5);">24</th><th class="week-header" style="background-color: var(--m5);">25</th><th class="week-header" style="background-color: var(--m5);">26</th><th class="week-header" style="background-color: var(--m6);">27</th><th class="week-header" style="background-color: var(--m6);">28</th><th class="week-header" style="background-color: var(--m6);">29</th><th class="week-header" style="background-color: var(--m6);">30</th><th class="week-header" style="background-color: var(--m6);">31</th><th class="week-header" style="background-color: var(--m7);">32</th><th class="week-header" style="background-color: var(--m7);">33</th><th class="week-header" style="background-color: var(--m7);">34</th><th class="week-header" style="background-color: var(--m7);">35</th><th class="week-header" style="background-color: var(--m8);">36</th><th class="week-header" style="background-color: var(--m8);">37</th><th class="week-header" style="background-color: var(--m8);">38</th><th class="week-header" style="background-color: var(--m8);">39</th><th class="week-header" style="background-color: var(--m9);">40</th><th class="week-header" style="background-color: var(--m9);">41</th><th class="week-header" style="background-color: var(--m9);">42</th><th class="week-header" style="background-color: var(--m9);">43</th><th class="week-header" style="background-color: var(--m9);">44</th><th class="week-header" style="background-color: var(--m10);">45</th><th class="week-header" style="background-color: var(--m10);">46</th><th class="week-header" style="background-color: var(--m10);">47</th><th class="week-header" style="background-color: var(--m10);">48</th><th class="week-header" style="background-color: var(--m11);">49</th><th class="week-header" style="background-color: var(--m11);">50</th><th class="week-header" style="background-color: var(--m11);">51</th><th class="week-header" style="background-color: var(--m11);">52</th><th class="week-header" style="background-color: var(--m11);">53</th></tr></thead>
+            <tbody id="ganttBody"><tr><td class="task-name-col"><div class="task-cell-content"><span class="tbl-color-swatch" title="Cambiar color" style="background-color: rgb(167, 139, 250);"><input type="color"></span><span class="task-label" title="Sistema de tickets - bien implementado">Sistema de tickets - bien implementado</span><button class="delete-btn" title="Eliminar">×</button></div></td><td style="background-color: var(--m0); opacity: 0.35;"></td><td style="background-color: var(--m0); opacity: 0.35;"></td><td style="background-color: var(--m0); opacity: 0.35;"></td><td style="background-color: var(--m0); opacity: 0.35;"></td><td style="background-color: var(--m0); opacity: 0.35;"></td><td style="background-color: var(--m1); opacity: 0.35;"></td><td><div class="task-bar" style="background-color: rgb(167, 139, 250);"></div></td><td><div class="task-bar" style="background-color: rgb(167, 139, 250);"></div></td><td><div class="task-bar" style="background-color: rgb(167, 139, 250);"></div></td><td><div class="task-bar" style="background-color: rgb(167, 139, 250);"></div></td><td style="background-color: var(--m2); opacity: 0.35;"></td><td style="background-color: var(--m2); opacity: 0.35;"></td><td class="is-today" style="background-color: var(--m2); opacity: 0.35;"></td><td style="background-color: var(--m3); opacity: 0.35;"></td><td style="background-color: var(--m3); opacity: 0.35;"></td><td style="background-color: var(--m3); opacity: 0.35;"></td><td style="background-color: var(--m3); opacity: 0.35;"></td><td style="background-color: var(--m3); opacity: 0.35;"></td><td style="background-color: var(--m4); opacity: 0.35;"></td><td style="background-color: var(--m4); opacity: 0.35;"></td><td style="background-color: var(--m4); opacity: 0.35;"></td><td style="background-color: var(--m4); opacity: 0.35;"></td><td style="background-color: var(--m5); opacity: 0.35;"></td><td style="background-color: var(--m5); opacity: 0.35;"></td><td style="background-color: var(--m5); opacity: 0.35;"></td><td style="background-color: var(--m5); opacity: 0.35;"></td><td style="background-color: var(--m6); opacity: 0.35;"></td><td style="background-color: var(--m6); opacity: 0.35;"></td><td style="background-color: var(--m6); opacity: 0.35;"></td><td style="background-color: var(--m6); opacity: 0.35;"></td><td style="background-color: var(--m6); opacity: 0.35;"></td><td style="background-color: var(--m7); opacity: 0.35;"></td><td style="background-color: var(--m7); opacity: 0.35;"></td><td style="background-color: var(--m7); opacity: 0.35;"></td><td style="background-color: var(--m7); opacity: 0.35;"></td><td style="background-color: var(--m8); opacity: 0.35;"></td><td style="background-color: var(--m8); opacity: 0.35;"></td><td style="background-color: var(--m8); opacity: 0.35;"></td><td style="background-color: var(--m8); opacity: 0.35;"></td><td style="background-color: var(--m9); opacity: 0.35;"></td><td style="background-color: var(--m9); opacity: 0.35;"></td><td style="background-color: var(--m9); opacity: 0.35;"></td><td style="background-color: var(--m9); opacity: 0.35;"></td><td style="background-color: var(--m9); opacity: 0.35;"></td><td style="background-color: var(--m10); opacity: 0.35;"></td><td style="background-color: var(--m10); opacity: 0.35;"></td><td style="background-color: var(--m10); opacity: 0.35;"></td><td style="background-color: var(--m10); opacity: 0.35;"></td><td style="background-color: var(--m11); opacity: 0.35;"></td><td style="background-color: var(--m11); opacity: 0.35;"></td><td style="background-color: var(--m11); opacity: 0.35;"></td><td style="background-color: var(--m11); opacity: 0.35;"></td><td style="background-color: var(--m11); opacity: 0.35;"></td></tr><tr><td class="task-name-col"><div class="task-cell-content"><span class="tbl-color-swatch" title="Cambiar color" style="background-color: rgb(59, 130, 246);"><input type="color"></span><span class="task-label" title="COMPAQi - instalación de servidor">COMPAQi - instalación de servidor</span><button class="delete-btn" title="Eliminar">×</button></div></td><td style="background-color: var(--m0); opacity: 0.35;"></td><td style="background-color: var(--m0); opacity: 0.35;"></td><td style="background-color: var(--m0); opacity: 0.35;"></td><td style="background-color: var(--m0); opacity: 0.35;"></td><td style="background-color: var(--m0); opacity: 0.35;"></td><td style="background-color: var(--m1); opacity: 0.35;"></td><td style="background-color: var(--m1); opacity: 0.35;"></td><td style="background-color: var(--m1); opacity: 0.35;"></td><td style="background-color: var(--m1); opacity: 0.35;"></td><td style="background-color: var(--m2); opacity: 0.35;"></td><td><div class="task-bar" style="background-color: rgb(59, 130, 246);"></div></td><td><div class="task-bar" style="background-color: rgb(59, 130, 246);"></div></td><td class="is-today" style="background-color: var(--m2); opacity: 0.35;"></td><td style="background-color: var(--m3); opacity: 0.35;"></td><td style="background-color: var(--m3); opacity: 0.35;"></td><td style="background-color: var(--m3); opacity: 0.35;"></td><td style="background-color: var(--m3); opacity: 0.35;"></td><td style="background-color: var(--m3); opacity: 0.35;"></td><td style="background-color: var(--m4); opacity: 0.35;"></td><td style="background-color: var(--m4); opacity: 0.35;"></td><td style="background-color: var(--m4); opacity: 0.35;"></td><td style="background-color: var(--m4); opacity: 0.35;"></td><td style="background-color: var(--m5); opacity: 0.35;"></td><td style="background-color: var(--m5); opacity: 0.35;"></td><td style="background-color: var(--m5); opacity: 0.35;"></td><td style="background-color: var(--m5); opacity: 0.35;"></td><td style="background-color: var(--m6); opacity: 0.35;"></td><td style="background-color: var(--m6); opacity: 0.35;"></td><td style="background-color: var(--m6); opacity: 0.35;"></td><td style="background-color: var(--m6); opacity: 0.35;"></td><td style="background-color: var(--m6); opacity: 0.35;"></td><td style="background-color: var(--m7); opacity: 0.35;"></td><td style="background-color: var(--m7); opacity: 0.35;"></td><td style="background-color: var(--m7); opacity: 0.35;"></td><td style="background-color: var(--m7); opacity: 0.35;"></td><td style="background-color: var(--m8); opacity: 0.35;"></td><td style="background-color: var(--m8); opacity: 0.35;"></td><td style="background-color: var(--m8); opacity: 0.35;"></td><td style="background-color: var(--m8); opacity: 0.35;"></td><td style="background-color: var(--m9); opacity: 0.35;"></td><td style="background-color: var(--m9); opacity: 0.35;"></td><td style="background-color: var(--m9); opacity: 0.35;"></td><td style="background-color: var(--m9); opacity: 0.35;"></td><td style="background-color: var(--m9); opacity: 0.35;"></td><td style="background-color: var(--m10); opacity: 0.35;"></td><td style="background-color: var(--m10); opacity: 0.35;"></td><td style="background-color: var(--m10); opacity: 0.35;"></td><td style="background-color: var(--m10); opacity: 0.35;"></td><td style="background-color: var(--m11); opacity: 0.35;"></td><td style="background-color: var(--m11); opacity: 0.35;"></td><td style="background-color: var(--m11); opacity: 0.35;"></td><td style="background-color: var(--m11); opacity: 0.35;"></td><td style="background-color: var(--m11); opacity: 0.35;"></td></tr><tr><td class="task-name-col"><div class="task-cell-content"><span class="tbl-color-swatch" title="Cambiar color" style="background-color: rgb(16, 185, 129);"><input type="color"></span><span class="task-label" title="Active directory - Configuración">Active directory - Configuración</span><button class="delete-btn" title="Eliminar">×</button></div></td><td><div class="task-bar" style="background-color: rgb(16, 185, 129);"></div></td><td><div class="task-bar" style="background-color: rgb(16, 185, 129);"></div></td><td><div class="task-bar" style="background-color: rgb(16, 185, 129);"></div></td><td><div class="task-bar" style="background-color: rgb(16, 185, 129);"></div></td><td><div class="task-bar" style="background-color: rgb(16, 185, 129);"></div></td><td><div class="task-bar" style="background-color: rgb(16, 185, 129);"></div></td><td><div class="task-bar" style="background-color: rgb(16, 185, 129);"></div></td><td><div class="task-bar" style="background-color: rgb(16, 185, 129);"></div></td><td><div class="task-bar" style="background-color: rgb(16, 185, 129);"></div></td><td><div class="task-bar" style="background-color: rgb(16, 185, 129);"></div></td><td><div class="task-bar" style="background-color: rgb(16, 185, 129);"></div></td><td><div class="task-bar" style="background-color: rgb(16, 185, 129);"></div></td><td class="is-today"><div class="task-bar" style="background-color: rgb(16, 185, 129);"></div></td><td><div class="task-bar" style="background-color: rgb(16, 185, 129);"></div></td><td><div class="task-bar" style="background-color: rgb(16, 185, 129);"></div></td><td><div class="task-bar" style="background-color: rgb(16, 185, 129);"></div></td><td><div class="task-bar" style="background-color: rgb(16, 185, 129);"></div></td><td style="background-color: var(--m3); opacity: 0.35;"></td><td style="background-color: var(--m4); opacity: 0.35;"></td><td style="background-color: var(--m4); opacity: 0.35;"></td><td style="background-color: var(--m4); opacity: 0.35;"></td><td style="background-color: var(--m4); opacity: 0.35;"></td><td style="background-color: var(--m5); opacity: 0.35;"></td><td style="background-color: var(--m5); opacity: 0.35;"></td><td style="background-color: var(--m5); opacity: 0.35;"></td><td style="background-color: var(--m5); opacity: 0.35;"></td><td style="background-color: var(--m6); opacity: 0.35;"></td><td style="background-color: var(--m6); opacity: 0.35;"></td><td style="background-color: var(--m6); opacity: 0.35;"></td><td style="background-color: var(--m6); opacity: 0.35;"></td><td style="background-color: var(--m6); opacity: 0.35;"></td><td style="background-color: var(--m7); opacity: 0.35;"></td><td style="background-color: var(--m7); opacity: 0.35;"></td><td style="background-color: var(--m7); opacity: 0.35;"></td><td style="background-color: var(--m7); opacity: 0.35;"></td><td style="background-color: var(--m8); opacity: 0.35;"></td><td style="background-color: var(--m8); opacity: 0.35;"></td><td style="background-color: var(--m8); opacity: 0.35;"></td><td style="background-color: var(--m8); opacity: 0.35;"></td><td style="background-color: var(--m9); opacity: 0.35;"></td><td style="background-color: var(--m9); opacity: 0.35;"></td><td style="background-color: var(--m9); opacity: 0.35;"></td><td style="background-color: var(--m9); opacity: 0.35;"></td><td style="background-color: var(--m9); opacity: 0.35;"></td><td style="background-color: var(--m10); opacity: 0.35;"></td><td style="background-color: var(--m10); opacity: 0.35;"></td><td style="background-color: var(--m10); opacity: 0.35;"></td><td style="background-color: var(--m10); opacity: 0.35;"></td><td style="background-color: var(--m11); opacity: 0.35;"></td><td style="background-color: var(--m11); opacity: 0.35;"></td><td style="background-color: var(--m11); opacity: 0.35;"></td><td style="background-color: var(--m11); opacity: 0.35;"></td><td style="background-color: var(--m11); opacity: 0.35;"></td></tr><tr><td class="task-name-col"><div class="task-cell-content"><span class="tbl-color-swatch" title="Cambiar color" style="background-color: rgb(245, 158, 11);"><input type="color"></span><span class="task-label" title="Habilitación pantalla de Soldadura">Habilitación pantalla de Soldadura</span><button class="delete-btn" title="Eliminar">×</button></div></td><td style="background-color: var(--m0); opacity: 0.35;"></td><td style="background-color: var(--m0); opacity: 0.35;"></td><td style="background-color: var(--m0); opacity: 0.35;"></td><td style="background-color: var(--m0); opacity: 0.35;"></td><td style="background-color: var(--m0); opacity: 0.35;"></td><td style="background-color: var(--m1); opacity: 0.35;"></td><td style="background-color: var(--m1); opacity: 0.35;"></td><td style="background-color: var(--m1); opacity: 0.35;"></td><td style="background-color: var(--m1); opacity: 0.35;"></td><td style="background-color: var(--m2); opacity: 0.35;"></td><td style="background-color: var(--m2); opacity: 0.35;"></td><td><div class="task-bar" style="background-color: rgb(245, 158, 11);"></div></td><td class="is-today"><div class="task-bar" style="background-color: rgb(245, 158, 11);"></div></td><td><div class="task-bar" style="background-color: rgb(245, 158, 11);"></div></td><td><div class="task-bar" style="background-color: rgb(245, 158, 11);"></div></td><td><div class="task-bar" style="background-color: rgb(245, 158, 11);"></div></td><td><div class="task-bar" style="background-color: rgb(245, 158, 11);"></div></td><td><div class="task-bar" style="background-color: rgb(245, 158, 11);"></div></td><td><div class="task-bar" style="background-color: rgb(245, 158, 11);"></div></td><td><div class="task-bar" style="background-color: rgb(245, 158, 11);"></div></td><td><div class="task-bar" style="background-color: rgb(245, 158, 11);"></div></td><td><div class="task-bar" style="background-color: rgb(245, 158, 11);"></div></td><td><div class="task-bar" style="background-color: rgb(245, 158, 11);"></div></td><td><div class="task-bar" style="background-color: rgb(245, 158, 11);"></div></td><td><div class="task-bar" style="background-color: rgb(245, 158, 11);"></div></td><td><div class="task-bar" style="background-color: rgb(245, 158, 11);"></div></td><td><div class="task-bar" style="background-color: rgb(245, 158, 11);"></div></td><td><div class="task-bar" style="background-color: rgb(245, 158, 11);"></div></td><td><div class="task-bar" style="background-color: rgb(245, 158, 11);"></div></td><td><div class="task-bar" style="background-color: rgb(245, 158, 11);"></div></td><td><div class="task-bar" style="background-color: rgb(245, 158, 11);"></div></td><td style="background-color: var(--m7); opacity: 0.35;"></td><td style="background-color: var(--m7); opacity: 0.35;"></td><td style="background-color: var(--m7); opacity: 0.35;"></td><td style="background-color: var(--m7); opacity: 0.35;"></td><td style="background-color: var(--m8); opacity: 0.35;"></td><td style="background-color: var(--m8); opacity: 0.35;"></td><td style="background-color: var(--m8); opacity: 0.35;"></td><td style="background-color: var(--m8); opacity: 0.35;"></td><td style="background-color: var(--m9); opacity: 0.35;"></td><td style="background-color: var(--m9); opacity: 0.35;"></td><td style="background-color: var(--m9); opacity: 0.35;"></td><td style="background-color: var(--m9); opacity: 0.35;"></td><td style="background-color: var(--m9); opacity: 0.35;"></td><td style="background-color: var(--m10); opacity: 0.35;"></td><td style="background-color: var(--m10); opacity: 0.35;"></td><td style="background-color: var(--m10); opacity: 0.35;"></td><td style="background-color: var(--m10); opacity: 0.35;"></td><td style="background-color: var(--m11); opacity: 0.35;"></td><td style="background-color: var(--m11); opacity: 0.35;"></td><td style="background-color: var(--m11); opacity: 0.35;"></td><td style="background-color: var(--m11); opacity: 0.35;"></td><td style="background-color: var(--m11); opacity: 0.35;"></td></tr></tbody>
+        </table>
+    </div>
+</div>
+
+<!-- ══ TOASTS ═════════════════════════════════════════ -->
+<div class="toast-wrap" id="toastWrap"></div>
+
+<script>
+/* ════════════════════════════════════════════════════════
+   CONFIG & STATE
+════════════════════════════════════════════════════════ */
+const YEAR         = 2026;
+const STORAGE_TASKS = 'gantt2026_tasks';
+const STORAGE_THEME = 'gantt2026_theme';
+const MONTH_NAMES   = ["Enero","Febrero","Marzo","Abril","Mayo","Junio",
+                       "Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
+const TOTAL_WEEKS   = 53;
+
+let weeksData      = [];
+let currentIsoWeek = 0;
+let activeView     = 'cards';   // 'cards' | 'table'
+const API_URL      = 'http://localhost:3002/tasks';
+let tasksList      = [];
+
+/* ════════════════════════════════════════════════════════
+   THEME
+════════════════════════════════════════════════════════ */
+function setTheme(t) {
+    document.documentElement.setAttribute('data-theme', t);
+    localStorage.setItem(STORAGE_THEME, t);
+    document.querySelectorAll('.theme-btn').forEach(b =>
+        b.classList.toggle('active', b.dataset.themeVal === t)
+    );
+}
+function loadTheme() {
+    setTheme(localStorage.getItem(STORAGE_THEME) || 'light');
+}
+
+/* ════════════════════════════════════════════════════════
+   VIEW TOGGLE
+════════════════════════════════════════════════════════ */
+function switchView(view) {
+    activeView = view;
+    const isCards = view === 'cards';
+    document.getElementById('cardView').style.display  = isCards ? 'flex' : 'none';
+    document.getElementById('tableView').style.display = isCards ? 'none' : 'block';
+    document.getElementById('btnCards').classList.toggle('active', isCards);
+    document.getElementById('btnTable').classList.toggle('active', !isCards);
+}
+
+/* ════════════════════════════════════════════════════════
+   PERSISTENCE (API)
+════════════════════════════════════════════════════════ */
+async function loadTasks() {
+    try {
+        const res = await fetch(API_URL);
+        if(res.ok) {
+            tasksList = await res.json();
+            renderAll();
+        } else {
+            showToast('⚠️ Error al cargar tareas desde el servidor', 'warn');
+        }
+    } catch(e) {
+        showToast('⚠️ No se pudo conectar al servidor.', 'warn');
+        console.error("Error fetching tasks:", e);
+    }
+}
+
+async function updateTask(task) {
+    try {
+        const res = await fetch(`${API_URL}/${task.id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(task)
+        });
+        if (!res.ok) showToast('⚠️ Error guardando cambios', 'warn');
+    } catch (e) {
+        showToast('⚠️ Error de conexión', 'warn');
+    }
+}
+
+/* ════════════════════════════════════════════════════════
+   CALENDAR LOGIC
+════════════════════════════════════════════════════════ */
+function buildCalendarData() {
+    const today = new Date();
+    let d = new Date(YEAR, 0, 1);
+    let weekNum = 1;
+    let mc = Array.from({length: 12}, (_,i) => [i, 0]);
+    let monthCount = Object.fromEntries(mc);
+
+    while (d.getFullYear() === YEAR) {
+        monthCount[d.getMonth()]++;
+        if (d.getDay() === 0 || (d.getMonth() === 11 && d.getDate() === 31)) {
+            const dom = +Object.keys(monthCount).reduce((a,b) =>
+                monthCount[a] > monthCount[b] ? a : b);
+            const ws = new Date(d); ws.setDate(d.getDate() - 6);
+            weeksData.push({ weekNum, monthIndex: dom });
+            if (today >= ws && today <= d) currentIsoWeek = weekNum;
+            weekNum++;
+            monthCount = Object.fromEntries(mc);
+        }
+        d.setDate(d.getDate() + 1);
+    }
+
+    const sub = document.getElementById('weekInfo');
+    sub.textContent = currentIsoWeek > 0
+        ? `Semana ${currentIsoWeek} de ${YEAR}`
+        : `Planificador ${YEAR}`;
+}
+
+/* ════════════════════════════════════════════════════════
+   CARD VIEW RENDERER (Mobile)
+════════════════════════════════════════════════════════ */
+function renderCards() {
+    const section = document.getElementById('cardView');
+    section.innerHTML = '';
+
+    if (!tasksList.length) {
+        section.innerHTML = `
+            <div class="empty-state">
+                <div class="icon">📋</div>
+                <p>No hay tareas. Agrega una arriba.</p>
+            </div>`;
+        return;
+    }
+
+    tasksList.forEach(task => {
+        const card = document.createElement('article');
+        card.className = 'task-card';
+        card.style.setProperty('--task-color', task.color);
+
+        const endWeek  = Math.min(task.start + task.duration - 1, TOTAL_WEEKS);
+        const pctStart = ((task.start - 1) / TOTAL_WEEKS * 100).toFixed(1);
+        const pctWidth = (task.duration / TOTAL_WEEKS * 100).toFixed(1);
+        const todayPct = currentIsoWeek > 0
+            ? ((currentIsoWeek - 1) / TOTAL_WEEKS * 100).toFixed(1) : null;
+
+        // Is task active right now?
+        const isActive = currentIsoWeek >= task.start && currentIsoWeek < task.start + task.duration;
+
+        card.innerHTML = `
+            <div class="card-header">
+                <span class="card-name">${escHtml(task.name)}</span>
+                <div class="card-actions">
+                    <span class="card-color-btn" style="background:${task.color}" title="Cambiar color">
+                        <input type="color" value="${task.color}" data-id="${task.id}">
+                    </span>
+                    <button class="card-delete" data-id="${task.id}" title="Eliminar">×</button>
+                </div>
+            </div>
+
+            <div class="card-timeline">
+                <div class="timeline-track">
+                    <div class="timeline-fill" style="left:${pctStart}%;width:${pctWidth}%;background:${task.color};opacity:.85;"></div>
+                    ${todayPct !== null ? `<div class="timeline-today-marker" style="left:${todayPct}%"></div>` : ''}
+                </div>
+            </div>
+
+            <div class="card-meta">
+                <span>S${task.start} → S${endWeek}</span>
+                <div style="display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end">
+                    <span class="card-badge">⏱ ${task.duration} sem.</span>
+                    ${isActive ? `<span class="card-badge" style="color:var(--accent);border-color:var(--accent)">● Activa</span>` : ''}
+                </div>
+            </div>
+        `;
+
+        // Color picker
+        const colorInput = card.querySelector('input[type="color"]');
+        colorInput.addEventListener('input', e => {
+            task.color = e.target.value;
+            card.style.setProperty('--task-color', task.color);
+            e.target.closest('.card-color-btn').style.background = task.color;
+            card.querySelector('.timeline-fill').style.background = task.color;
+        });
+        colorInput.addEventListener('change', () => updateTask(task));
+
+        // Delete
+        card.querySelector('.card-delete').addEventListener('click', () => deleteTask(task.id));
+
+        section.appendChild(card);
+    });
+}
+
+/* ════════════════════════════════════════════════════════
+   GANTT TABLE RENDERER (Desktop)
+════════════════════════════════════════════════════════ */
+function renderHeaders() {
+    const thead = document.getElementById('ganttHead');
+    thead.innerHTML = '';
+    const trM = document.createElement('tr');
+    const trW = document.createElement('tr');
+
+    const corner = document.createElement('th');
+    corner.className = 'task-name-col'; corner.rowSpan = 2;
+    corner.textContent = 'Hito / Tarea'; trM.appendChild(corner);
+
+    let curMonth = weeksData[0].monthIndex, span = 0;
+
+    function flush(m, s) {
+        const th = document.createElement('th');
+        th.className = 'month-header'; th.colSpan = s;
+        th.textContent = MONTH_NAMES[m];
+        th.style.backgroundColor = `var(--m${m})`; trM.appendChild(th);
+    }
+
+    weeksData.forEach((w, i) => {
+        const thW = document.createElement('th');
+        thW.className = 'week-header';
+        if (w.weekNum === currentIsoWeek) thW.classList.add('is-today');
+        thW.textContent = w.weekNum;
+        thW.style.backgroundColor = `var(--m${w.monthIndex})`;
+        trW.appendChild(thW);
+
+        if (w.monthIndex === curMonth) { span++; }
+        else { flush(curMonth, span); curMonth = w.monthIndex; span = 1; }
+        if (i === weeksData.length - 1) flush(curMonth, span);
+    });
+
+    thead.appendChild(trM); thead.appendChild(trW);
+}
+
+function renderGrid() {
+    const tbody = document.getElementById('ganttBody');
+    tbody.innerHTML = '';
+
+    if (!tasksList.length) {
+        const tr = document.createElement('tr');
+        const td = document.createElement('td');
+        td.colSpan = weeksData.length + 1;
+        td.innerHTML = `<div class="empty-state"><div class="icon">📋</div><p>No hay tareas.</p></div>`;
+        tr.appendChild(td); tbody.appendChild(tr); return;
+    }
+
+    tasksList.forEach(task => {
+        const tr = document.createElement('tr');
+        const tdN = document.createElement('td');
+        tdN.className = 'task-name-col';
+
+        const cell = document.createElement('div');
+        cell.className = 'task-cell-content';
+
+        const swatch = document.createElement('span');
+        swatch.className = 'tbl-color-swatch';
+        swatch.style.backgroundColor = task.color; swatch.title = 'Cambiar color';
+        const cp = document.createElement('input'); cp.type = 'color'; cp.value = task.color;
+        cp.addEventListener('input', e => {
+            task.color = e.target.value;
+            swatch.style.backgroundColor = task.color;
+            // Visually update the bars without re-rendering everything
+            Array.from(tr.querySelectorAll('.task-bar')).forEach(b => b.style.backgroundColor = task.color);
+        });
+        cp.addEventListener('change', () => {
+            updateTask(task);
+        });
+        swatch.appendChild(cp);
+
+        const lbl = document.createElement('span');
+        lbl.className = 'task-label'; lbl.textContent = task.name; lbl.title = task.name;
+
+        const del = document.createElement('button');
+        del.className = 'delete-btn'; del.textContent = '×'; del.title = 'Eliminar';
+        del.onclick = () => deleteTask(task.id);
+
+        cell.append(swatch, lbl, del); tdN.appendChild(cell); tr.appendChild(tdN);
+
+        weeksData.forEach(w => {
+            const td = document.createElement('td');
+            if (w.weekNum === currentIsoWeek) td.classList.add('is-today');
+            if (w.weekNum >= task.start && w.weekNum < task.start + task.duration) {
+                const bar = document.createElement('div');
+                bar.className = 'task-bar'; bar.style.backgroundColor = task.color;
+                td.appendChild(bar);
+            } else {
+                td.style.backgroundColor = `var(--m${w.monthIndex})`; td.style.opacity = '.35';
+            }
+            tr.appendChild(td);
+        });
+        tbody.appendChild(tr);
+    });
+}
+
+function renderAll() { renderCards(); renderGrid(); }
+
+/* ════════════════════════════════════════════════════════
+   CRUD
+════════════════════════════════════════════════════════ */
+async function addTask() {
+    const name     = document.getElementById('taskName').value.trim();
+    const start    = parseInt(document.getElementById('startWeek').value);
+    const duration = parseInt(document.getElementById('duration').value);
+    const color    = document.getElementById('taskColor').value;
+
+    if (!name)                return showToast('⚠️ Escribe el nombre de la tarea.', 'warn');
+    if (!start || start<1 || start>53) return showToast('⚠️ Semana inicio inválida (1–53).', 'warn');
+    if (!duration || duration<1)       return showToast('⚠️ La duración debe ser ≥ 1 semana.', 'warn');
+
+    try {
+        const res = await fetch(API_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, start, duration, color })
+        });
+        if (res.ok) {
+            const newTask = await res.json();
+            tasksList.push(newTask);
+            renderAll();
+            document.getElementById('taskName').value  = '';
+            document.getElementById('startWeek').value = '';
+            document.getElementById('duration').value  = '';
+            showToast(`✅ "${name}" agregada.`);
+        } else {
+             showToast('⚠️ Error al guardar tarea', 'warn');
+        }
+    } catch (e) {
+        showToast('⚠️ Error de conexión', 'warn');
+        console.error(e);
+    }
+}
+
+async function deleteTask(id) {
+    const t = tasksList.find(x => x.id === id);
+    if (!t) return;
+    
+    // Optimistic UI update
+    tasksList = tasksList.filter(x => x.id !== id);
+    renderAll();
+    
+    try {
+        const res = await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
+        if (res.ok) {
+            showToast(`🗑️ "${t.name}" eliminada.`);
+        } else {
+            // Revert UI on failure
+            tasksList.push(t);
+            renderAll();
+            showToast('⚠️ Error al eliminar tarea', 'warn');
+        }
+    } catch (e) {
+        tasksList.push(t);
+        renderAll();
+        showToast('⚠️ Error de conexión', 'warn');
+        console.error(e);
+    }
+}
+
+/* ════════════════════════════════════════════════════════
+   TOAST
+════════════════════════════════════════════════════════ */
+function showToast(msg, type = 'info') {
+    const wrap  = document.getElementById('toastWrap');
+    const toast = document.createElement('div');
+    toast.className = 'toast'; toast.textContent = msg;
+    if (type === 'warn') toast.style.borderLeftColor = 'var(--danger)';
+    wrap.appendChild(toast);
+    setTimeout(() => {
+        toast.style.transition = 'opacity .28s';
+        toast.style.opacity    = '0';
+        setTimeout(() => toast.remove(), 320);
+    }, 2800);
+}
+
+/* ════════════════════════════════════════════════════════
+   UTILS
+════════════════════════════════════════════════════════ */
+function escHtml(s) {
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// Enter key shortcut
+document.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && ['taskName','startWeek','duration'].includes(e.target.id)) addTask();
+});
+
+/* ════════════════════════════════════════════════════════
+   INIT
+════════════════════════════════════════════════════════ */
+loadTheme();
+buildCalendarData();
+renderHeaders();
+// Load tasks from backend, this will automatically call renderAll()
+loadTasks();
+</script>
+
+</body></html>
