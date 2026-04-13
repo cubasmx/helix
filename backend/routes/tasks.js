@@ -20,7 +20,7 @@ module.exports = (pool) => {
     }
 
     // GET /tasks
-    router.get('/', auth, async (req, res) => {
+    router.get('/', async (req, res) => {
         try {
             const [rows] = await pool.query('SELECT * FROM tasks ORDER BY start');
             res.json(rows);
@@ -28,7 +28,7 @@ module.exports = (pool) => {
     });
 
     // POST /tasks
-    router.post('/', auth, async (req, res) => {
+    router.post('/', async (req, res) => {
         const { name, start, duration, color = '#4f46e5', source_card_id = null } = req.body;
         const safeName = typeof name === 'string' ? name.trim() : '';
         const safeStart = parseWeek(start, null);
@@ -58,7 +58,7 @@ module.exports = (pool) => {
     });
 
     // PUT /tasks/:id
-    router.put('/:id', auth, async (req, res) => {
+    router.put('/:id', async (req, res) => {
         const { id } = req.params;
         const { name, start, duration, color } = req.body;
         try {
@@ -81,7 +81,7 @@ module.exports = (pool) => {
     });
 
     // DELETE /tasks/:id
-    router.delete('/:id', auth, async (req, res) => {
+    router.delete('/:id', async (req, res) => {
         const { id } = req.params;
         try {
             await pool.query('DELETE FROM tasks WHERE id = ?', [id]);
