@@ -1,10 +1,9 @@
 const router = require('express').Router();
 const bcrypt = require('bcryptjs');
-const { auth, adminOnly } = require('../middleware/auth');
 
 module.exports = (pool) => {
     // GET /users — list all (for assignment dropdowns)
-    router.get('/', auth, async (req, res) => {
+    router.get('/', async (req, res) => {
         try {
             const [rows] = await pool.query(
                 'SELECT id, name, email, role, avatar_color FROM users ORDER BY name'
@@ -13,8 +12,8 @@ module.exports = (pool) => {
         } catch (e) { res.status(500).json({ error: e.message }); }
     });
 
-    // POST /users — create (admin only)
-    router.post('/', auth, adminOnly, async (req, res) => {
+    // POST /users — create 
+    router.post('/', async (req, res) => {
         const { name, email, password, role = 'member', avatar_color = '#6366f1' } = req.body;
         if (!name || !email || !password)
             return res.status(400).json({ error: 'Nombre, email y contraseña requeridos' });
@@ -31,8 +30,8 @@ module.exports = (pool) => {
         }
     });
 
-    // PUT /users/:id — update (admin only)
-    router.put('/:id', auth, adminOnly, async (req, res) => {
+    // PUT /users/:id — update 
+    router.put('/:id', async (req, res) => {
         const { id } = req.params;
         const { name, email, role, avatar_color, password } = req.body;
         try {
@@ -48,11 +47,9 @@ module.exports = (pool) => {
         } catch (e) { res.status(500).json({ error: e.message }); }
     });
 
-    // DELETE /users/:id (admin only, can't delete yourself)
-    router.delete('/:id', auth, adminOnly, async (req, res) => {
+    // DELETE /users/:id 
+    router.delete('/:id', async (req, res) => {
         const { id } = req.params;
-        if (parseInt(id) === req.user.id)
-            return res.status(400).json({ error: 'No puedes eliminarte a ti mismo' });
         try {
             await pool.query('DELETE FROM users WHERE id = ?', [id]);
             res.json({ message: 'Usuario eliminado' });

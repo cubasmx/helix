@@ -1,9 +1,8 @@
 const router = require('express').Router();
-const { auth } = require('../middleware/auth');
 
 module.exports = (pool) => {
     // GET /calendar/events?month=4&year=2026
-    router.get('/events', auth, async (req, res) => {
+    router.get('/events', async (req, res) => {
         const { month, year } = req.query;
         try {
             let query = `
@@ -23,28 +22,28 @@ module.exports = (pool) => {
     });
 
     // POST /calendar/events
-    router.post('/events', auth, async (req, res) => {
-        const { title, description = '', start_datetime, end_datetime, color = '#6366f1', assignee_id = null } = req.body;
+    router.post('/events', async (req, res) => {
+        const { title, description = '', start_datetime, end_datetime, color = '#6366f1', assignee_id = null, priority = 'media' } = req.body;
         if (!title || !start_datetime) return res.status(400).json({ error: 'Título y fecha de inicio requeridos' });
         try {
             const [result] = await pool.query(
-                'INSERT INTO calendar_events (title, description, start_datetime, end_datetime, color, assignee_id) VALUES (?, ?, ?, ?, ?, ?)',
-                [title, description, start_datetime, end_datetime || start_datetime, color, assignee_id]
+                'INSERT INTO calendar_events (title, description, start_datetime, end_datetime, color, assignee_id, priority) VALUES (?, ?, ?, ?, ?, ?, ?)',
+                [title, description, start_datetime, end_datetime || start_datetime, color, assignee_id, priority]
             );
-            res.status(201).json({ id: result.insertId, title, description, start_datetime, end_datetime, color, assignee_id });
+            res.status(201).json({ id: result.insertId, title, description, start_datetime, end_datetime, color, assignee_id, priority });
         } catch (e) { res.status(500).json({ error: e.message }); }
     });
 
     // PUT /calendar/events/:id
-    router.put('/events/:id', auth, async (req, res) => {
+    router.put('/events/:id', async (req, res) => {
         const { id } = req.params;
-        const { title, description, start_datetime, end_datetime, color, assignee_id } = req.body;
+        const { title, description, start_datetime, end_datetime, color, assignee_id, priority } = req.body;
         try {
             const [rows] = await pool.query('SELECT * FROM calendar_events WHERE id = ?', [id]);
             if (!rows.length) return res.status(404).json({ error: 'Evento no encontrado' });
             const ev = rows[0];
             await pool.query(
-                'UPDATE calendar_events SET title=?, description=?, start_datetime=?, end_datetime=?, color=?, assignee_id=? WHERE id=?',
+                'UPDATE calendar_events SET title=?, description=?, start_datetime=?, end_datetime=?, color=?, assignee_id=?, priority=? WHERE id=?',
                 [
                     title ?? ev.title,
                     description ?? ev.description,
@@ -52,6 +51,7 @@ module.exports = (pool) => {
                     end_datetime ?? ev.end_datetime,
                     color ?? ev.color,
                     assignee_id !== undefined ? assignee_id : ev.assignee_id,
+                    priority ?? ev.priority,
                     id
                 ]
             );
@@ -60,7 +60,7 @@ module.exports = (pool) => {
     });
 
     // DELETE /calendar/events/:id
-    router.delete('/events/:id', auth, async (req, res) => {
+    router.delete('/events/:id', async (req, res) => {
         const { id } = req.params;
         try {
             await pool.query('DELETE FROM calendar_events WHERE id = ?', [id]);

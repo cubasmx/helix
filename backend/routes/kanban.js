@@ -1,9 +1,8 @@
 const router = require('express').Router();
-const { auth } = require('../middleware/auth');
 
 module.exports = (pool) => {
     // GET /kanban/columns — columns with their cards
-    router.get('/columns', auth, async (req, res) => {
+    router.get('/columns', async (req, res) => {
         try {
             const [columns] = await pool.query('SELECT * FROM kanban_columns ORDER BY position');
             const [cards] = await pool.query(`
@@ -21,7 +20,7 @@ module.exports = (pool) => {
     });
 
     // POST /kanban/columns
-    router.post('/columns', auth, async (req, res) => {
+    router.post('/columns', async (req, res) => {
         const { name, color = '#6366f1' } = req.body;
         try {
             const [[{ maxPos }]] = await pool.query(
@@ -36,7 +35,7 @@ module.exports = (pool) => {
     });
 
     // PUT /kanban/columns/:id
-    router.put('/columns/:id', auth, async (req, res) => {
+    router.put('/columns/:id', async (req, res) => {
         const { id } = req.params;
         const { name, color } = req.body;
         try {
@@ -50,7 +49,7 @@ module.exports = (pool) => {
     });
 
     // PUT /kanban/columns-reorder
-    router.put('/columns-reorder', auth, async (req, res) => {
+    router.put('/columns-reorder', async (req, res) => {
         const { order } = req.body; // array of column IDs in new order
         try {
             for (let i = 0; i < order.length; i++) {
@@ -61,7 +60,7 @@ module.exports = (pool) => {
     });
 
     // DELETE /kanban/columns/:id
-    router.delete('/columns/:id', auth, async (req, res) => {
+    router.delete('/columns/:id', async (req, res) => {
         const { id } = req.params;
         try {
             await pool.query('DELETE FROM kanban_columns WHERE id = ?', [id]);
@@ -70,7 +69,7 @@ module.exports = (pool) => {
     });
 
     // POST /kanban/cards
-    router.post('/cards', auth, async (req, res) => {
+    router.post('/cards', async (req, res) => {
         const { column_id, title, description = '', color = '#6366f1', assignee_id = null, due_date = null } = req.body;
         try {
             const [[{ maxPos }]] = await pool.query(
@@ -91,7 +90,7 @@ module.exports = (pool) => {
     });
 
     // PUT /kanban/cards/:id
-    router.put('/cards/:id', auth, async (req, res) => {
+    router.put('/cards/:id', async (req, res) => {
         const { id } = req.params;
         const { title, description, color, assignee_id, due_date } = req.body;
         try {
@@ -114,7 +113,7 @@ module.exports = (pool) => {
     });
 
     // PUT /kanban/cards/:id/move
-    router.put('/cards/:id/move', auth, async (req, res) => {
+    router.put('/cards/:id/move', async (req, res) => {
         const { id } = req.params;
         const { column_id, position } = req.body;
         try {
@@ -125,7 +124,7 @@ module.exports = (pool) => {
     });
 
     // DELETE /kanban/cards/:id
-    router.delete('/cards/:id', auth, async (req, res) => {
+    router.delete('/cards/:id', async (req, res) => {
         const { id } = req.params;
         try {
             await pool.query('DELETE FROM kanban_cards WHERE id = ?', [id]);

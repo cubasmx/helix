@@ -560,6 +560,81 @@ td:hover .task-bar { filter: brightness(1.1); }
     #cardView  { display: none !important; }
     #tableView { display: block !important; }
 }
+/* ════════════════════════════════════════════════════════
+   KANBAN & CALENDAR STYLES
+════════════════════════════════════════════════════════ */
+.kanban-region, .calendar-region {
+    margin-top: 32px;
+    background: var(--surface);
+    padding: 16px;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border);
+}
+.kanban-header, .calendar-region h2 {
+    display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;
+}
+.kanban-header h2, .calendar-region h2 { margin: 0; font-size: 1.25rem; }
+.kanban-board {
+    display: flex; gap: 16px; overflow-x: auto; padding-bottom: 12px;
+    align-items: flex-start;
+}
+.kanban-col {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    min-width: 260px; max-width: 260px;
+    display: flex; flex-direction: column;
+}
+.kanban-col-header {
+    padding: 10px 12px; font-weight: 600; font-size: 14px;
+    border-bottom: 2px solid var(--col-color, var(--border));
+    display: flex; justify-content: space-between; align-items: center;
+}
+.kanban-cards-area {
+    padding: 8px; min-height: 100px; display: flex; flex-direction: column; gap: 8px;
+}
+.kanban-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--card-color, var(--text));
+    border-radius: var(--radius-xs);
+    padding: 10px; cursor: grab;
+    box-shadow: var(--shadow);
+    transition: transform 0.15s, box-shadow 0.15s;
+}
+.kanban-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
+.kanban-card:active { cursor: grabbing; }
+.kanban-card-title { font-weight: 600; font-size: 13px; margin-bottom: 4px; word-break: break-word; }
+.kanban-card-meta { display: flex; justify-content: space-between; align-items: center; font-size: 10px; color: var(--text-muted); margin-top: 6px; }
+.assignee-badge {
+    width: 20px; height: 20px; border-radius: 50%;
+    color: #fff; display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 10px;
+}
+.custom-select {
+    width: 100%; padding: 10px 12px;
+    border: 1px solid var(--border); border-radius: var(--radius-sm);
+    font-size: 14px; font-family: var(--font);
+    background: var(--surface-2); color: var(--text);
+}
+.fc { font-family: var(--font); background: var(--surface); color: var(--text); }
+.fc-theme-standard td, .fc-theme-standard th { border-color: var(--border); }
+.fc-toolbar-title { font-size: 1.2rem !important; }
+.fc-button-primary { background-color: var(--accent) !important; border-color: var(--accent) !important; text-transform: capitalize; }
+.fc-button-active { background-color: var(--accent-h) !important; border-color: var(--accent-h) !important; }
+.modal-overlay {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.5); z-index: 9999;
+    display: flex; align-items: center; justify-content: center;
+}
+.modal-content {
+    background: var(--surface); padding: 20px; border-radius: var(--radius);
+    width: 90%; max-width: 400px; box-shadow: var(--shadow-md);
+    border: 1px solid var(--border);
+}
+.modal-content h3 { margin-top: 0; margin-bottom: 16px; }
+.priority-badge { font-size: 10px; padding: 2px 6px; border-radius: 99px; border: 1px solid rgba(0,0,0,0.1); margin-left: 4px; font-weight: bold; background: var(--surface-2); color: var(--text); }
     </style>
 </head>
 <body>
@@ -731,6 +806,103 @@ td:hover .task-bar { filter: brightness(1.1); }
         </table>
     </div>
 </div>
+
+<!-- ══ KANBAN VIEW ════════════════════════════════════ -->
+<section id="kanbanRegion" class="kanban-region">
+    <div class="kanban-header">
+        <h2>Tablero Kanban</h2>
+        <button class="btn-add" onclick="createKanbanColumn()">＋ Nueva Columna</button>
+    </div>
+    <div class="kanban-board" id="kanbanBoard"></div>
+</section>
+
+<!-- ══ CALENDAR VIEW ══════════════════════════════════ -->
+<section id="calendarRegion" class="calendar-region">
+    <h2>Calendario Dinámico</h2>
+    <div id="fullCalendarRoot"></div>
+</section>
+
+<!-- ══ MODALS ═════════════════════════════════════════ -->
+<div class="modal-overlay" id="kanbanCardModal" style="display:none;">
+    <div class="modal-content">
+        <h3 id="kcModalTitle">Editar Tarjeta</h3>
+        <input type="hidden" id="kcId">
+        <input type="hidden" id="kcColId">
+        
+        <div class="ctrl-group">
+            <span class="ctrl-label">Título</span>
+            <input type="text" id="kcTitle" placeholder="Título de la tarjeta">
+        </div>
+        <div class="ctrl-group" style="margin-top: 10px;">
+            <span class="ctrl-label">Descripción</span>
+            <textarea id="kcDesc" style="width:100%; padding: 8px; border:1px solid var(--border); border-radius:var(--radius-sm); font-family:var(--font); font-size:14px; background:var(--surface-2); color:var(--text);"></textarea>
+        </div>
+        <div class="ctrl-row" style="margin-top: 10px;">
+            <div class="ctrl-group">
+                <span class="ctrl-label">Asignado a</span>
+                <select id="kcAssignee" class="custom-select"></select>
+            </div>
+            <div class="ctrl-group">
+                <span class="ctrl-label">Fecha Límite</span>
+                <input type="date" id="kcDueDate" class="custom-select">
+            </div>
+        </div>
+        <div class="ctrl-row" style="margin-top: 10px; align-items:flex-end;">
+            <div class="ctrl-group" style="flex:0;">
+                <span class="ctrl-label">Color</span>
+                <input type="color" id="kcColor" value="#6366f1">
+            </div>
+            <div style="flex:1; display:flex; justify-content:flex-end; gap:8px;">
+                <button class="btn-add" style="background:var(--surface-2); color:var(--text);" onclick="document.getElementById('kanbanCardModal').style.display='none'">Cancelar</button>
+                <button class="btn-add" onclick="saveKanbanCard()">Guardar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal-overlay" id="eventModal" style="display:none;">
+    <div class="modal-content">
+        <h3 id="evModalTitle">Nuevo Evento</h3>
+        <input type="hidden" id="evId">
+        
+        <div class="ctrl-group">
+            <span class="ctrl-label">Título</span>
+            <input type="text" id="evTitle" placeholder="Título del evento">
+        </div>
+        <div class="ctrl-row" style="margin-top: 10px;">
+            <div class="ctrl-group">
+                <span class="ctrl-label">Inicio</span>
+                <input type="datetime-local" id="evStart" class="custom-select">
+            </div>
+            <div class="ctrl-group">
+                <span class="ctrl-label">Asignado a</span>
+                <select id="evAssignee" class="custom-select"></select>
+            </div>
+        </div>
+        <div class="ctrl-row" style="margin-top: 10px; align-items:flex-end;">
+            <div class="ctrl-group">
+                <span class="ctrl-label">Prioridad</span>
+                <select id="evPriority" class="custom-select">
+                    <option value="baja">Baja</option>
+                    <option value="media" selected>Media</option>
+                    <option value="alta">Alta</option>
+                </select>
+            </div>
+            <div class="ctrl-group" style="flex:0;">
+                <span class="ctrl-label">Color</span>
+                <input type="color" id="evColor" value="#10b981">
+            </div>
+        </div>
+        <div class="ctrl-row" style="margin-top: 16px; justify-content:flex-end; gap:8px;">
+            <button id="evDeleteBtn" class="btn-add" style="background:var(--danger); color:#fff; display:none;" onclick="deleteEvent()">Eliminar</button>
+            <button class="btn-add" style="background:var(--surface-2); color:var(--text);" onclick="document.getElementById('eventModal').style.display='none'">Cancelar</button>
+            <button class="btn-add" onclick="saveEvent()">Guardar</button>
+        </div>
+    </div>
+</div>
+
+<!-- FullCalendar CDN -->
+<script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js'></script>
 
 <!-- ══ TOASTS ═════════════════════════════════════════ -->
 <div class="toast-wrap" id="toastWrap"></div>
@@ -1112,13 +1284,464 @@ document.addEventListener('keydown', e => {
 });
 
 /* ════════════════════════════════════════════════════════
+   KANBAN Y CALENDAR DATA & APIs
+════════════════════════════════════════════════════════ */
+let usersList = [];
+let kanbanCols = [];
+let kanbanCards = [];
+let calendarObj = null;
+
+const USERS_API = (window.__ENV__.SERVICE_URL).replace(/\/$/, '') + '/users';
+const K_COLS_API = (window.__ENV__.SERVICE_URL).replace(/\/$/, '') + '/kanban/columns';
+const K_CARDS_API = (window.__ENV__.SERVICE_URL).replace(/\/$/, '') + '/kanban/cards';
+const EVENTS_API = (window.__ENV__.SERVICE_URL).replace(/\/$/, '') + '/calendar/events';
+
+async function loadInitialData() {
+    try {
+        const uRes = await fetch(USERS_API);
+        if(uRes.ok) usersList = await uRes.json();
+    } catch(e) {}
+    
+    // Poblar selects
+    const assigneeSelects = [document.getElementById('kcAssignee'), document.getElementById('evAssignee')];
+    assigneeSelects.forEach(sel => {
+        if (!sel) return;
+        sel.innerHTML = '<option value="">Sin asignar</option>';
+        usersList.forEach(u => {
+            const opt = document.createElement('option');
+            opt.value = u.id; opt.textContent = u.name;
+            sel.appendChild(opt);
+        });
+    });
+
+    await loadKanban();
+    initCalendar();
+}
+
+/* ════════════════════════════════════════════════════════
+   KANBAN LOGIC
+════════════════════════════════════════════════════════ */
+async function loadKanban() {
+    try {
+        const res = await fetch(K_COLS_API);
+        if(res.ok) {
+            kanbanCols = await res.json();
+            renderKanban();
+            if(calendarObj) calendarObj.refetchEvents();
+        }
+    } catch(e) { console.error('Kanban load error', e); }
+}
+
+function renderKanban() {
+    const board = document.getElementById('kanbanBoard');
+    board.innerHTML = '';
+    
+    kanbanCols.forEach(col => {
+        const cDiv = document.createElement('div');
+        cDiv.className = 'kanban-col';
+        cDiv.style.setProperty('--col-color', col.color || 'var(--border)');
+        cDiv.dataset.colId = col.id;
+        
+        let header = document.createElement('div');
+        header.className = 'kanban-col-header';
+        header.innerHTML = `<span>${escHtml(col.name)} <span style="font-size:10px; color:var(--text-muted)">(${col.cards.length})</span></span>
+                            <div style="display:flex;gap:4px;">
+                              <button class="delete-btn" title="Add Card" onclick="createKanbanCard(${col.id})">＋</button>
+                              <button class="delete-btn" title="Delete Col" onclick="deleteKanbanColumn(${col.id})">×</button>
+                            </div>`;
+        
+        let area = document.createElement('div');
+        area.className = 'kanban-cards-area';
+        area.dataset.colId = col.id;
+        area.addEventListener('dragover', handleDragOver);
+        area.addEventListener('drop', handleDrop);
+        
+        col.cards.sort((a,b) => a.position - b.position).forEach(card => {
+            let kCard = document.createElement('div');
+            kCard.className = 'kanban-card';
+            kCard.style.setProperty('--card-color', card.color);
+            kCard.draggable = true;
+            kCard.dataset.cardId = card.id;
+            kCard.dataset.colId = col.id;
+            kCard.addEventListener('dragstart', handleDragStart);
+            kCard.addEventListener('dragend', handleDragEnd);
+            
+            // Assignee badge
+            let badgeHtml = '';
+            if(card.assignee_id) {
+                let u = usersList.find(x => x.id == card.assignee_id);
+                if(u) badgeHtml = `<div class="assignee-badge" style="background:${u.avatar_color}" title="${escHtml(u.name)}">${escHtml(u.name.charAt(0).toUpperCase())}</div>`;
+            }
+            let dateHtml = card.due_date ? `<span style="display:flex;align-items:center;gap:3px;"><span style="font-size:12px">📅</span> ${new Date(card.due_date).toLocaleDateString()}</span>` : '';
+            
+            kCard.innerHTML = `<div class="kanban-card-title">${escHtml(card.title)}</div>
+                               ${card.description ? `<div style="font-size:11px; margin-bottom:5px; color:var(--text-muted)">${escHtml(card.description.substring(0,40))}...</div>` : ''}
+                               <div class="kanban-card-meta">
+                                    ${dateHtml}
+                                    ${badgeHtml}
+                                    <div style="margin-left:auto; display:flex; gap:4px;">
+                                        <button class="delete-btn" title="Edit" onclick="openCardModal(${col.id}, ${card.id})">✎</button>
+                                        <button class="delete-btn" title="Delete" onclick="deleteKanbanCard(${col.id}, ${card.id})">×</button>
+                                    </div>
+                               </div>`;
+            area.appendChild(kCard);
+        });
+        
+        cDiv.appendChild(header);
+        cDiv.appendChild(area);
+        board.appendChild(cDiv);
+    });
+}
+
+// Drag & Drop
+let draggedCardEl = null;
+
+function handleDragStart(e) {
+    draggedCardEl = this;
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', this.dataset.cardId);
+    setTimeout(() => this.style.opacity = '0.5', 0);
+}
+
+function handleDragEnd(e) {
+    this.style.opacity = '1';
+    draggedCardEl = null;
+}
+
+function handleDragOver(e) {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+}
+
+async function handleDrop(e) {
+    e.preventDefault();
+    if (!draggedCardEl) return;
+    
+    let targetColDiv = this.closest('.kanban-col');
+    if(!targetColDiv) return;
+    
+    let newColId = parseInt(targetColDiv.dataset.colId);
+    let cardId = parseInt(draggedCardEl.dataset.cardId);
+    let oldColId = parseInt(draggedCardEl.dataset.colId);
+    
+    // find correct insert pos
+    let cardsArea = targetColDiv.querySelector('.kanban-cards-area');
+    let afterEl = getDragAfterElement(cardsArea, e.clientY);
+    
+    // Optimistic UI update and Array sync
+    let colFrom = kanbanCols.find(c => c.id === oldColId);
+    let colTo = kanbanCols.find(c => c.id === newColId);
+    let cardIdx = colFrom.cards.findIndex(c => c.id === cardId);
+    let cardData = colFrom.cards.splice(cardIdx, 1)[0];
+    
+    let newPos = 0;
+    if(afterEl == null) {
+        cardsArea.appendChild(draggedCardEl);
+        newPos = colTo.cards.length;
+        colTo.cards.push(cardData);
+    } else {
+        cardsArea.insertBefore(draggedCardEl, afterEl);
+        let afterId = parseInt(afterEl.dataset.cardId);
+        newPos = colTo.cards.findIndex(c => c.id === afterId);
+        if(newPos === -1) newPos = colTo.cards.length;
+        colTo.cards.splice(newPos, 0, cardData);
+    }
+    
+    draggedCardEl.dataset.colId = newColId;
+    cardData.column_id = newColId;
+    
+    // Re-index pos 
+    colTo.cards.forEach((c, i) => c.position = i);
+    
+    renderKanban(); 
+    if(calendarObj) calendarObj.refetchEvents();
+    
+    // API
+    try {
+        await fetch(`${K_CARDS_API}/${cardId}/move`, {
+            method: 'PUT',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ column_id: newColId, position: newPos })
+        });
+    } catch(err) { showToast('⚠️ Error al mover tarjeta', 'warn'); loadKanban(); }
+}
+
+function getDragAfterElement(container, y) {
+    let draggableEls = [...container.querySelectorAll('.kanban-card:not([style*="opacity: 0.5"])')];
+    return draggableEls.reduce((closest, child) => {
+        let box = child.getBoundingClientRect();
+        let offset = y - box.top - box.height / 2;
+        if (offset < 0 && offset > closest.offset) return { offset: offset, element: child };
+        else return closest;
+    }, { offset: Number.NEGATIVE_INFINITY }).element;
+}
+
+async function createKanbanColumn() {
+    let name = prompt("Nombre de la nueva columna:");
+    if(!name) return;
+    let color = prompt("Color en HEX (ej. #3b82f6):", "#64748b");
+    if(!color) color = "#64748b";
+    try {
+        let res = await fetch(K_COLS_API, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ name, color })
+        });
+        if(res.ok) { showToast('✅ Columna creada'); loadKanban(); }
+    } catch(e) { showToast('⚠️ Error al crear columna', 'warn'); }
+}
+
+async function deleteKanbanColumn(id) {
+    if(!confirm('¿Eliminar esta columna y TODAS sus tarjetas?')) return;
+    try {
+        let res = await fetch(`${K_COLS_API}/${id}`, { method: 'DELETE' });
+        if(res.ok) { showToast('🗑️ Columna eliminada'); loadKanban(); }
+    } catch(e) { showToast('⚠️ Error', 'warn'); }
+}
+
+async function createKanbanCard(colId) {
+    document.getElementById('kcModalTitle').textContent = 'Nueva Tarjeta';
+    document.getElementById('kcId').value = '';
+    document.getElementById('kcColId').value = colId;
+    document.getElementById('kcTitle').value = '';
+    document.getElementById('kcDesc').value = '';
+    document.getElementById('kcColor').value = '#6366f1';
+    document.getElementById('kcAssignee').value = '';
+    document.getElementById('kcDueDate').value = '';
+    document.getElementById('kanbanCardModal').style.display = 'flex';
+}
+
+function openCardModal(colId, cardId) {
+    let col = kanbanCols.find(c => c.id === colId);
+    let card = col.cards.find(c => c.id === cardId);
+    if(!card) return;
+    
+    document.getElementById('kcModalTitle').textContent = 'Editar Tarjeta';
+    document.getElementById('kcId').value = card.id;
+    document.getElementById('kcColId').value = colId;
+    document.getElementById('kcTitle').value = card.title;
+    document.getElementById('kcDesc').value = card.description || '';
+    document.getElementById('kcColor').value = card.color;
+    document.getElementById('kcAssignee').value = card.assignee_id || '';
+    document.getElementById('kcDueDate').value = card.due_date ? card.due_date.split('T')[0] : '';
+    document.getElementById('kanbanCardModal').style.display = 'flex';
+}
+
+async function saveKanbanCard() {
+    let id = document.getElementById('kcId').value;
+    let colId = document.getElementById('kcColId').value;
+    let payload = {
+        title: document.getElementById('kcTitle').value,
+        description: document.getElementById('kcDesc').value,
+        color: document.getElementById('kcColor').value,
+        assignee_id: document.getElementById('kcAssignee').value || null,
+        due_date: document.getElementById('kcDueDate').value || null
+    };
+    
+    if(!payload.title) return showToast('⚠️ El título es requerido', 'warn');
+    
+    try {
+        let uri = id ? `${K_CARDS_API}/${id}` : K_CARDS_API;
+        if(!id) payload.column_id = colId;
+        
+        let res = await fetch(uri, {
+            method: id ? 'PUT' : 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(payload)
+        });
+        if(res.ok) {
+            showToast('✅ Tarjeta guardada');
+            document.getElementById('kanbanCardModal').style.display = 'none';
+            loadKanban();
+        } else {
+            showToast('⚠️ Error al guardar', 'warn');
+        }
+    } catch(e) { showToast('⚠️ Error de red', 'warn'); }
+}
+
+async function deleteKanbanCard(colId, cardId) {
+    if(!confirm('¿Eliminar tarjeta?')) return;
+    try {
+        let res = await fetch(`${K_CARDS_API}/${cardId}`, { method: 'DELETE' });
+        if(res.ok) { showToast('🗑️ Tarjeta eliminada'); loadKanban(); }
+    } catch(e) { showToast('⚠️ Error', 'warn'); }
+}
+
+
+/* ════════════════════════════════════════════════════════
+   CALENDAR LOGIC
+════════════════════════════════════════════════════════ */
+function initCalendar() {
+    let calEl = document.getElementById('fullCalendarRoot');
+    if(typeof FullCalendar === 'undefined'){
+       setTimeout(initCalendar, 200);   
+       return;
+    }
+    calendarObj = new FullCalendar.Calendar(calEl, {
+        initialView: 'dayGridMonth',
+        locale: 'es',
+        headerToolbar: {
+            left: 'prev,next today',
+            center: 'title',
+            right: 'dayGridMonth,timeGridWeek'
+        },
+        height: 650,
+        editable: true,
+        selectable: true,
+        buttonText: { today: 'Hoy', month: 'Mes', week: 'Semana' },
+        events: async function(info, successCallback, failureCallback) {
+            try {
+                // 1. Fetch Calendar Events
+                let evs = [];
+                let res = await fetch(EVENTS_API); 
+                if(res.ok) {
+                    let data = await res.json();
+                    evs = data.map(e => ({
+                        id: 'ev_' + e.id,
+                        title: (e.priority ? `[${e.priority.toUpperCase()}] ` : '') + e.title,
+                        start: e.start_datetime,
+                        end: e.end_datetime,
+                        backgroundColor: e.color,
+                        borderColor: e.color,
+                        extendedProps: { ...e, isNative: true }
+                    }));
+                }
+                
+                // 2. Map Kanban cards with due_date
+                kanbanCols.forEach(col => {
+                    col.cards.forEach(card => {
+                        if(card.due_date) {
+                            evs.push({
+                                id: 'kc_' + card.id,
+                                title: '📋 ' + card.title,
+                                start: card.due_date,
+                                allDay: true,
+                                backgroundColor: card.color,
+                                borderColor: card.color,
+                                extendedProps: { ...card, isKanban: true }
+                            });
+                        }
+                    });
+                });
+                
+                successCallback(evs);
+            } catch(e) { failureCallback(e); }
+        },
+        dateClick: function(info) {
+            openEventModal(null, info.dateStr);
+        },
+        eventClick: function(info) {
+            if(info.event.extendedProps.isKanban) {
+                openCardModal(info.event.extendedProps.column_id, info.event.extendedProps.id);
+            } else {
+                openEventModal(info.event.extendedProps, null);
+            }
+        },
+        eventDrop: async function(info) {
+            if(info.event.extendedProps.isKanban) {
+                let cardId = info.event.extendedProps.id;
+                let isoDate = info.event.start.toISOString().split('T')[0];
+                try {
+                    await fetch(`${K_CARDS_API}/${cardId}`, {
+                        method: 'PUT',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({ due_date: isoDate })
+                    });
+                    loadKanban();
+                    showToast('✅ Fecha de tarjeta actualizada');
+                } catch(e) { info.revert(); }
+            } else {
+                let evId = info.event.extendedProps.id;
+                try {
+                    await fetch(`${EVENTS_API}/${evId}`, {
+                        method: 'PUT',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({
+                            start_datetime: info.event.start.toISOString(),
+                            end_datetime: info.event.end ? info.event.end.toISOString() : null
+                        })
+                    });
+                    showToast('✅ Evento reprogramado');
+                } catch(e) { info.revert(); }
+            }
+        }
+    });
+    calendarObj.render();
+}
+
+function openEventModal(evData, defaultDateStr) {
+    document.getElementById('eventModal').style.display = 'flex';
+    if(evData) {
+        document.getElementById('evModalTitle').textContent = 'Editar Evento';
+        document.getElementById('evId').value = evData.id;
+        document.getElementById('evTitle').value = evData.title;
+        let sd = new Date(evData.start_datetime);
+        document.getElementById('evStart').value = new Date(sd.getTime() - sd.getTimezoneOffset() * 60000).toISOString().slice(0,16);
+        document.getElementById('evAssignee').value = evData.assignee_id || '';
+        document.getElementById('evPriority').value = evData.priority || 'media';
+        document.getElementById('evColor').value = evData.color || '#10b981';
+        document.getElementById('evDeleteBtn').style.display = 'inline-block';
+    } else {
+        document.getElementById('evModalTitle').textContent = 'Nuevo Evento';
+        document.getElementById('evId').value = '';
+        document.getElementById('evTitle').value = '';
+        let sd = defaultDateStr ? new Date(defaultDateStr) : new Date();
+        document.getElementById('evStart').value = new Date(sd.getTime() - sd.getTimezoneOffset() * 60000).toISOString().slice(0,16);
+        document.getElementById('evAssignee').value = '';
+        document.getElementById('evPriority').value = 'media';
+        document.getElementById('evColor').value = '#10b981';
+        document.getElementById('evDeleteBtn').style.display = 'none';
+    }
+}
+
+async function saveEvent() {
+    let id = document.getElementById('evId').value;
+    let payload = {
+        title: document.getElementById('evTitle').value,
+        start_datetime: document.getElementById('evStart').value,
+        assignee_id: document.getElementById('evAssignee').value || null,
+        priority: document.getElementById('evPriority').value,
+        color: document.getElementById('evColor').value
+    };
+    if(!payload.title || !payload.start_datetime) return showToast('⚠️ Título y fecha requeridos', 'warn');
+    
+    try {
+        let uri = id ? `${EVENTS_API}/${id}` : EVENTS_API;
+        let res = await fetch(uri, {
+            method: id ? 'PUT' : 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(payload)
+        });
+        if(res.ok) {
+            showToast('✅ Evento guardado');
+            document.getElementById('eventModal').style.display = 'none';
+            if(calendarObj) calendarObj.refetchEvents();
+        } else showToast('⚠️ Error al guardar', 'warn');
+    } catch(e) { showToast('⚠️ Error de conexión', 'warn'); }
+}
+
+async function deleteEvent() {
+    let id = document.getElementById('evId').value;
+    if(!id || !confirm('¿Eliminar evento?')) return;
+    try {
+        let res = await fetch(`${EVENTS_API}/${id}`, { method: 'DELETE' });
+        if(res.ok) {
+            showToast('🗑️ Evento eliminado');
+            document.getElementById('eventModal').style.display = 'none';
+            if(calendarObj) calendarObj.refetchEvents();
+        }
+    } catch(e) { showToast('⚠️ Error', 'warn'); }
+}
+
+
+/* ════════════════════════════════════════════════════════
    INIT
 ════════════════════════════════════════════════════════ */
 loadTheme();
 buildCalendarData();
 renderHeaders();
-// Load tasks from backend, this will automatically call renderAll()
 loadTasks();
+loadInitialData();
 </script>
 
 </body></html>

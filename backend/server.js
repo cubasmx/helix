@@ -94,10 +94,15 @@ async function initDB() {
             end_datetime   DATETIME,
             color          VARCHAR(50) DEFAULT '#6366f1',
             assignee_id    INT DEFAULT NULL,
+            priority       ENUM('baja', 'media', 'alta') DEFAULT 'media',
             created_at     DATETIME DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (assignee_id) REFERENCES users(id) ON DELETE SET NULL
         )
     `);
+    
+    // Migration: add priority if missing
+    try { await pool.query("ALTER TABLE calendar_events ADD COLUMN priority ENUM('baja', 'media', 'alta') DEFAULT 'media'"); }
+    catch { /* column already exists */ }
 
     // ── Seed: admin user ─────────────────────────────────────────────
     const [[{ uCount }]] = await pool.query('SELECT COUNT(*) AS uCount FROM users');
