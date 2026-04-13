@@ -1,117 +1,146 @@
 require('dotenv').config();
 const express = require('express');
-const mysql = require('mysql2/promise');
-const cors = require('cors');
+const mysql   = require('mysql2/promise');
+const cors    = require('cors');
+const bcrypt  = require('bcryptjs');
 
-const app = express();
+const app  = express();
 const port = process.env.PORT || 3000;
 
-// Enable CORS so the frontend can access the API
 app.use(cors());
 app.use(express.json());
 
-// Database connection parameters loaded from .env
 const dbParams = {
-    host: process.env.DB_HOST || 'localhost',
-    port: parseInt(process.env.DB_PORT) || 3306,
-    user: process.env.DB_USER || 'root',
+    host:     process.env.DB_HOST     || 'localhost',
+    port:     parseInt(process.env.DB_PORT) || 3306,
+    user:     process.env.DB_USER     || 'root',
     password: process.env.DB_PASSWORD || ''
 };
 
 let pool;
 
 async function initDB() {
+    console.log('Connecting to MySQL...');
+    const connection = await mysql.createConnection(dbParams);
+    const dbName = process.env.DB_NAME || 'gantt_db';
+    await connection.query(`CREATE DATABASE IF NOT EXISTS \`${dbName}\``);
+    await connection.end();
+
+    pool = mysql.createPool({ ...dbParams, database: dbName });
+
+    // ── Gantt tasks ─────────────────────────────────────────────────
+    await pool.query(`
+        CREATE TABLE IF NOT EXISTS tasks (
+            id            INT AUTO_INCREMENT PRIMARY KEY,
+            name          VARCHAR(255) NOT NULL,
+            start         INT NOT NULL,
+            duration      INT NOT NULL,
+            color         VARCHAR(50) DEFAULT '#4f46e5',
+            source_card_id INT DEFAULT NULL
+        )
+    `);
+    // Migration: add source_card_id if missing
+    try { await pool.query('ALTER TABLE tasks ADD COLUMN source_card_id INT DEFAULT NULL'); }
+    catch { /* column already exists */ }
+
+    // ── Users ────────────────────────────────────────────────────────
+    await pool.query(`
+        CREATE TABLE IF NOT EXISTS users (
+            id            INT AUTO_INCREMENT PRIMARY KEY,
+            name          VARCHAR(100) NOT NULL,
+            email         VARCHAR(150) UNIQUE NOT NULL,
+            password_hash VARCHAR(255) NOT NULL,
+            role          ENUM('admin','member') DEFAULT 'member',
+            avatar_color  VARCHAR(50) DEFAULT '#6366f1',
+            created_at    DATETIME DEFAULT CURRENT_TIMESTAMP
+        )
+    `);
+
+    // ── Kanban columns ───────────────────────────────────────────────
+    await pool.query(`
+        CREATE TABLE IF NOT EXISTS kanban_columns (
+            id       INT AUTO_INCREMENT PRIMARY KEY,
+            name     VARCHAR(100) NOT NULL,
+            color    VARCHAR(50) DEFAULT '#6366f1',
+            position INT DEFAULT 0
+        )
+    `);
+
+    // ── Kanban cards ─────────────────────────────────────────────────
+    await pool.query(`
+        CREATE TABLE IF NOT EXISTS kanban_cards (
+            id               INT AUTO_INCREMENT PRIMARY KEY,
+            column_id        INT NOT NULL,
+            title            VARCHAR(255) NOT NULL,
+            description      TEXT,
+            color            VARCHAR(50) DEFAULT '#6366f1',
+            assignee_id      INT DEFAULT NULL,
+            position         INT DEFAULT 0,
+            due_date         DATE DEFAULT NULL,
+            promoted_task_id INT DEFAULT NULL,
+            created_at       DATETIME DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (column_id)   REFERENCES kanban_columns(id) ON DELETE CASCADE,
+            FOREIGN KEY (assignee_id) REFERENCES users(id) ON DELETE SET NULL
+        )
+    `);
+
+    // ── Calendar events ──────────────────────────────────────────────
+    await pool.query(`
+        CREATE TABLE IF NOT EXISTS calendar_events (
+            id             INT AUTO_INCREMENT PRIMARY KEY,
+            title          VARCHAR(255) NOT NULL,
+            description    TEXT,
+            start_datetime DATETIME NOT NULL,
+            end_datetime   DATETIME,
+            color          VARCHAR(50) DEFAULT '#6366f1',
+            assignee_id    INT DEFAULT NULL,
+            created_at     DATETIME DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (assignee_id) REFERENCES users(id) ON DELETE SET NULL
+        )
+    `);
+
+    // ── Seed: admin user ─────────────────────────────────────────────
+    const [[{ uCount }]] = await pool.query('SELECT COUNT(*) AS uCount FROM users');
+    if (uCount === 0) {
+        const hash = await bcrypt.hash('admin123', 10);
+        await pool.query(
+            'INSERT INTO users (name, email, password_hash, role, avatar_color) VALUES (?, ?, ?, ?, ?)',
+            ['Admin', 'admin@helix.local', hash, 'admin', '#6366f1']
+        );
+        console.log('✅ Admin created → admin@helix.local / admin123');
+    }
+
+    // ── Seed: default Kanban columns ─────────────────────────────────
+    const [[{ cCount }]] = await pool.query('SELECT COUNT(*) AS cCount FROM kanban_columns');
+    if (cCount === 0) {
+        const defaults = [
+            ['Backlog',      '#64748b', 0],
+            ['Por hacer',    '#3b82f6', 1],
+            ['En progreso',  '#f59e0b', 2],
+            ['Hecho',        '#22c55e', 3],
+        ];
+        for (const [name, color, pos] of defaults) {
+            await pool.query('INSERT INTO kanban_columns (name, color, position) VALUES (?, ?, ?)', [name, color, pos]);
+        }
+        console.log('✅ Default Kanban columns created');
+    }
+
+    console.log('✅ Database initialized');
+}
+
+async function start() {
     try {
-        console.log("Connecting to MySQL...");
-        // Connect without database selected to create it if necessary
-        const connection = await mysql.createConnection(dbParams);
-        const dbName = process.env.DB_NAME || 'gantt_db';
-        await connection.query(`CREATE DATABASE IF NOT EXISTS \`${dbName}\`;`);
-        await connection.end();
-
-        // Now create a connection pool connected to the new database
-        pool = mysql.createPool({ ...dbParams, database: dbName });
-
-        // Create tasks table
-        const createTableQuery = `
-            CREATE TABLE IF NOT EXISTS tasks (
-                id INT AUTO_INCREMENT PRIMARY KEY,
-                name VARCHAR(255) NOT NULL,
-                start INT NOT NULL,
-                duration INT NOT NULL,
-                color VARCHAR(50) DEFAULT '#4f46e5'
-            )
-        `;
-        await pool.query(createTableQuery);
-        console.log("Database and tasks table initialized successfully");
-    } catch (error) {
-        console.error("Database initialization failed:", error);
+        await initDB();
+        app.use('/auth',     require('./routes/auth')(pool));
+        app.use('/users',    require('./routes/users')(pool));
+        app.use('/tasks',    require('./routes/tasks')(pool));
+        app.use('/kanban',   require('./routes/kanban')(pool));
+        app.use('/calendar', require('./routes/calendar')(pool));
+        app.listen(port, () => console.log(`🚀 Helix backend → http://localhost:${port}`));
+    } catch (err) {
+        console.error('Startup failed:', err);
+        process.exit(1);
     }
 }
 
-// Get all tasks
-app.get('/tasks', async (req, res) => {
-    try {
-        const [rows] = await pool.query('SELECT * FROM tasks');
-        res.json(rows);
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-});
-
-// Create task
-app.post('/tasks', async (req, res) => {
-    const { name, start, duration, color } = req.body;
-    try {
-        const [result] = await pool.query(
-            'INSERT INTO tasks (name, start, duration, color) VALUES (?, ?, ?, ?)',
-            [name, start, duration, color || '#4f46e5']
-        );
-        res.status(201).json({ id: result.insertId, name, start, duration, color });
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-});
-
-// Delete task
-app.delete('/tasks/:id', async (req, res) => {
-    const { id } = req.params;
-    try {
-        await pool.query('DELETE FROM tasks WHERE id = ?', [id]);
-        res.json({ message: 'Task deleted' });
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-});
-
-// Update task completely or partially (e.g. for color change)
-app.put('/tasks/:id', async (req, res) => {
-    const { id } = req.params;
-    const { name, start, duration, color } = req.body;
-    try {
-        // Find existing task to allow partial updates
-        const [rows] = await pool.query('SELECT * FROM tasks WHERE id = ?', [id]);
-        if (rows.length === 0) {
-            return res.status(404).json({ error: 'Task not found' });
-        }
-        
-        const task = rows[0];
-        const newName = name !== undefined ? name : task.name;
-        const newStart = start !== undefined ? start : task.start;
-        const newDuration = duration !== undefined ? duration : task.duration;
-        const newColor = color !== undefined ? color : task.color;
-
-        await pool.query(
-            'UPDATE tasks SET name = ?, start = ?, duration = ?, color = ? WHERE id = ?',
-            [newName, newStart, newDuration, newColor, id]
-        );
-        res.json({ message: 'Task updated' });
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-});
-
-app.listen(port, async () => {
-    await initDB();
-    console.log(`Gantt backend listening at http://localhost:${port}`);
-});
+start();
