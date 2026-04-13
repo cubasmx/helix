@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  gantt-api:
+    build:
+      context: ./backend
+    container_name: gantt-api
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    env_file:
+      - ./backend/.env
+
+  gantt-frontend:
+    image: nginx:alpine
+    container_name: gantt-frontend
+    restart: unless-stopped
+    ports:
+      - "8081:80"
+    volumes:
+      - ./frontend:/usr/share/nginx/html
+      - ./frontend/nginx.conf:/etc/nginx/templates/default.conf.template
+    environment:
+      - SERVICE_URL=http://10.10.2.63:3000
+    depends_on:
+      - gantt-api
