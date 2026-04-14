@@ -137,6 +137,48 @@
     --m8:#1a1500;--m9:#0c0f28;--m10:#001a14;--m11:#1a0707;
 }
 
+/* ─── DARK EMERALD (Verde metálico) ─────────────────── */
+[data-theme="dark-emerald"] {
+    --bg:          #090f0d;
+    --surface:     #101a16;
+    --surface-2:   #0c1410;
+    --border:      #1a3028;
+    --text:        #d1ede2;
+    --text-muted:  #5a8c72;
+    --accent:      #3ddc84;
+    --accent-h:    #2ac76e;
+    --accent-fg:   #060e0a;
+    --hdr-bg:      #071009;
+    --hdr-fg:      #78e8b0;
+    --today-bg:    rgba(61,220,132,.13);
+    --today-bd:    #2ac76e;
+    --danger:      #ff6b6b;
+    --m0:#071a2a;--m1:#1a0f28;--m2:#071a10;--m3:#1a1300;
+    --m4:#041a14;--m5:#1a0708;--m6:#1a0713;--m7:#061a0d;
+    --m8:#1a1600;--m9:#0c0f28;--m10:#041a14;--m11:#1a0707;
+}
+
+/* ─── DARK CRIMSON (Rojo metálico) ──────────────────── */
+[data-theme="dark-crimson"] {
+    --bg:          #0f0909;
+    --surface:     #1a1010;
+    --surface-2:   #140c0c;
+    --border:      #301818;
+    --text:        #edd1d1;
+    --text-muted:  #8c5a5a;
+    --accent:      #dc3d3d;
+    --accent-h:    #c72a2a;
+    --accent-fg:   #0e0606;
+    --hdr-bg:      #100707;
+    --hdr-fg:      #e87878;
+    --today-bg:    rgba(220,61,61,.13);
+    --today-bd:    #c72a2a;
+    --danger:      #ff8a8a;
+    --m0:#072a1a;--m1:#1a0f28;--m2:#071a10;--m3:#1a1300;
+    --m4:#041a14;--m5:#1a0707;--m6:#1a0713;--m7:#061a0d;
+    --m8:#1a1600;--m9:#0c0f28;--m10:#041a12;--m11:#1a0707;
+}
+
 /* ════════════════════════════════════════════════════════
    RESET & BASE
 ════════════════════════════════════════════════════════ */
@@ -904,6 +946,13 @@ td:hover .task-bar { filter: brightness(1.1); }
 [data-theme="dark"] .priority-badge.alta { background: #450a0a; color: #fca5a5; border-color: #7f1d1d; }
 [data-theme="dark"] .priority-badge.media { background: #422006; color: #fde68a; border-color: #78350f; }
 [data-theme="dark"] .priority-badge.baja { background: #052e16; color: #86efac; border-color: #14532d; }
+[data-theme="dark-emerald"] .priority-badge.alta  { background: #450a0a; color: #fca5a5; border-color: #7f1d1d; }
+[data-theme="dark-emerald"] .priority-badge.media { background: #332000; color: #fde68a; border-color: #78350f; }
+[data-theme="dark-emerald"] .priority-badge.baja  { background: #012e10; color: #6ee7a0; border-color: #14532d; }
+[data-theme="dark-crimson"] .priority-badge.alta  { background: #4a0808; color: #ffb0b0; border-color: #991b1b; }
+[data-theme="dark-crimson"] .priority-badge.media { background: #3a2000; color: #fde68a; border-color: #78350f; }
+[data-theme="dark-crimson"] .priority-badge.baja  { background: #01280d; color: #6ee7a0; border-color: #14532d; }
+
 
 /* ════════════════════════════════════════════════════════
    USERS PANEL
