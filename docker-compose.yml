@@ -16,7 +16,7 @@ services:
     container_name: gantt-frontend
     restart: unless-stopped
     ports:
-      - "8081:80"
+      - "8085:80"
     volumes:
       - ./frontend:/usr/share/nginx/html
       - ./frontend/nginx.conf:/etc/nginx/templates/default.conf.template
