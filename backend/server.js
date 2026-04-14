@@ -43,18 +43,51 @@ async function initDB() {
     try { await pool.query('ALTER TABLE tasks ADD COLUMN source_card_id INT DEFAULT NULL'); }
     catch { /* column already exists */ }
 
+    // ── Departments ──────────────────────────────────────────────────
+    await pool.query(`
+        CREATE TABLE IF NOT EXISTS departments (
+            id    INT AUTO_INCREMENT PRIMARY KEY,
+            name  VARCHAR(100) UNIQUE NOT NULL,
+            color VARCHAR(50) DEFAULT '#6366f1'
+        )
+    `);
+    // Seed default departments
+    const [[{ dCount }]] = await pool.query('SELECT COUNT(*) AS dCount FROM departments');
+    if (dCount === 0) {
+        const depts = [
+            ['Sistemas',       '#3ddc84'],
+            ['Administración', '#818cf8'],
+            ['Ventas',         '#f97316'],
+            ['Producción',     '#f59e0b'],
+            ['Dirección',      '#06b6d4'],
+        ];
+        for (const [name, color] of depts)
+            await pool.query('INSERT INTO departments (name, color) VALUES (?, ?)', [name, color]);
+        console.log('✅ Default departments created');
+    }
+
     // ── Users ────────────────────────────────────────────────────────
     await pool.query(`
         CREATE TABLE IF NOT EXISTS users (
-            id            INT AUTO_INCREMENT PRIMARY KEY,
-            name          VARCHAR(100) NOT NULL,
-            email         VARCHAR(150) UNIQUE NOT NULL,
-            password_hash VARCHAR(255) NOT NULL,
-            role          ENUM('admin','member') DEFAULT 'member',
-            avatar_color  VARCHAR(50) DEFAULT '#6366f1',
-            created_at    DATETIME DEFAULT CURRENT_TIMESTAMP
+            id              INT AUTO_INCREMENT PRIMARY KEY,
+            name            VARCHAR(100) NOT NULL,
+            email           VARCHAR(150) UNIQUE NOT NULL,
+            password_hash   VARCHAR(255) NOT NULL,
+            role            ENUM('admin','member') DEFAULT 'member',
+            avatar_color    VARCHAR(50) DEFAULT '#6366f1',
+            department_id   INT DEFAULT NULL,
+            preferred_theme VARCHAR(30) DEFAULT 'dark',
+            created_at      DATETIME DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (department_id) REFERENCES departments(id) ON DELETE SET NULL
         )
     `);
+    // Migrations for existing installations
+    try { await pool.query("ALTER TABLE users ADD COLUMN department_id INT DEFAULT NULL"); } catch {}
+    try { await pool.query("ALTER TABLE users ADD COLUMN preferred_theme VARCHAR(30) DEFAULT 'dark'"); } catch {}
+    try {
+        // Add FK only if not already present
+        await pool.query("ALTER TABLE users ADD CONSTRAINT fk_user_dept FOREIGN KEY (department_id) REFERENCES departments(id) ON DELETE SET NULL");
+    } catch {}
 
     // ── Kanban columns ───────────────────────────────────────────────
     await pool.query(`
@@ -108,9 +141,10 @@ async function initDB() {
     const [[{ uCount }]] = await pool.query('SELECT COUNT(*) AS uCount FROM users');
     if (uCount === 0) {
         const hash = await bcrypt.hash('admin123', 10);
+        const [[sistDept]] = await pool.query("SELECT id FROM departments WHERE name = 'Sistemas' LIMIT 1");
         await pool.query(
-            'INSERT INTO users (name, email, password_hash, role, avatar_color) VALUES (?, ?, ?, ?, ?)',
-            ['Admin', 'admin@helix.local', hash, 'admin', '#6366f1']
+            'INSERT INTO users (name, email, password_hash, role, avatar_color, department_id, preferred_theme) VALUES (?, ?, ?, ?, ?, ?, ?)',
+            ['Admin', 'admin@helix.local', hash, 'admin', '#6366f1', sistDept?.id ?? null, 'dark-emerald']
         );
         console.log('✅ Admin created → admin@helix.local / admin123');
     }
@@ -136,11 +170,12 @@ async function initDB() {
 async function start() {
     try {
         await initDB();
-        app.use('/auth',     require('./routes/auth')(pool));
-        app.use('/users',    require('./routes/users')(pool));
-        app.use('/tasks',    require('./routes/tasks')(pool));
-        app.use('/kanban',   require('./routes/kanban')(pool));
-        app.use('/calendar', require('./routes/calendar')(pool));
+        app.use('/auth',        require('./routes/auth')(pool));
+        app.use('/users',       require('./routes/users')(pool));
+        app.use('/departments', require('./routes/departments')(pool));
+        app.use('/tasks',       require('./routes/tasks')(pool));
+        app.use('/kanban',      require('./routes/kanban')(pool));
+        app.use('/calendar',    require('./routes/calendar')(pool));
         app.listen(port, () => console.log(`🚀 Helix backend → http://localhost:${port}`));
     } catch (err) {
         console.error('Startup failed:', err);

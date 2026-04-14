@@ -19,18 +19,24 @@
         <span class="subtitle" id="weekInfo">Semana 13 de 2026</span>
     </div>
     <div class="header-actions">
+        <!-- User + dept badge (shown after login) -->
+        <div class="user-info-bar" id="userInfoBar" style="display:none;">
+            <div class="user-avatar-xs" id="headerAvatarXs"></div>
+            <span id="headerUserName" style="font-weight:600;"></span>
+            <span class="dept-badge" id="headerDeptBadge"></span>
+        </div>
         <button class="btn-users" onclick="openUsersModal()" id="btnUsers" title="Gestión de usuarios">
             👥 Usuarios
         </button>
         <div class="theme-menu-wrap" id="themeMenuWrap">
             <button class="gear-btn" id="gearBtn" onclick="toggleThemeMenu()" title="Cambiar tema">⚙️</button>
             <div class="theme-dropdown" id="themeDropdown">
-                <button class="theme-option" data-theme-val="light"   onclick="setTheme('light')"   >☀️ Claro</button>
-                <button class="theme-option" data-theme-val="dark"    onclick="setTheme('dark')"    >🌙 Oscuro</button>
-                <button class="theme-option" data-theme-val="sepia"   onclick="setTheme('sepia')"   >📜 Sepia</button>
-                <button class="theme-option" data-theme-val="contrast" onclick="setTheme('contrast')">⬛ Alto contraste</button>
+                <button class="theme-option" data-theme-val="light"        onclick="setTheme('light')"       >☀️ Claro</button>
+                <button class="theme-option" data-theme-val="dark"         onclick="setTheme('dark')"        >🌙 Oscuro</button>
+                <button class="theme-option" data-theme-val="sepia"        onclick="setTheme('sepia')"       >📜 Sepia</button>
+                <button class="theme-option" data-theme-val="contrast"     onclick="setTheme('contrast')"   >⬛ Alto contraste</button>
                 <button class="theme-option" data-theme-val="ocean"        onclick="setTheme('ocean')"       >🌊 Océano</button>
-                <button class="theme-option" data-theme-val="forest"       onclick="setTheme('forest')"      >🌿 Bosque</button>
+                <button class="theme-option" data-theme-val="forest"       onclick="setTheme('forest')"     >🌿 Bosque</button>
                 <button class="theme-option" data-theme-val="dark-emerald" onclick="setTheme('dark-emerald')">🟢 Verde metálico</button>
                 <button class="theme-option" data-theme-val="dark-crimson" onclick="setTheme('dark-crimson')">🔴 Rojo metálico</button>
             </div>
@@ -321,48 +327,91 @@
 
 <!-- USERS MODAL -->
 <div class="modal-overlay" id="usersModal" style="display:none;">
-    <div class="modal-content" style="max-width:520px;">
-        <h3>👥 Gestión de Usuarios</h3>
+    <div class="modal-content" style="max-width:560px;">
 
-        <!-- Existing users -->
-        <div id="usersListEl" class="user-list"></div>
+        <!-- Tabs -->
+        <div style="display:flex;gap:0;margin-bottom:20px;border-bottom:2px solid var(--border);">
+            <button class="modal-tab active" id="tabUsers" onclick="switchUsersTab('users')" style="flex:1;">👥 Usuarios</button>
+            <button class="modal-tab" id="tabDepts" onclick="switchUsersTab('depts')" style="flex:1;">🏢 Departamentos</button>
+        </div>
 
-        <!-- Create new user -->
-        <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--border);">
-            <p style="margin:0 0 12px;font-weight:600;font-size:13px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;">Nuevo usuario</p>
-            <div class="form-row-cols">
-                <div class="ctrl-group">
-                    <span class="ctrl-label">Nombre</span>
-                    <input type="text" id="newUserName" placeholder="Nombre completo">
+        <!-- ── USERS TAB ── -->
+        <div id="usersTabPanel">
+            <h3 style="margin:0 0 14px;">Usuarios</h3>
+            <div id="usersListEl" class="user-list"></div>
+
+            <!-- Create new user -->
+            <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--border);">
+                <p style="margin:0 0 12px;font-weight:600;font-size:13px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;">Nuevo usuario</p>
+                <div class="form-row-cols">
+                    <div class="ctrl-group">
+                        <span class="ctrl-label">Nombre</span>
+                        <input type="text" id="newUserName" placeholder="Nombre completo">
+                    </div>
+                    <div class="ctrl-group">
+                        <span class="ctrl-label">Email</span>
+                        <input type="email" id="newUserEmail" placeholder="correo@empresa.com">
+                    </div>
                 </div>
-                <div class="ctrl-group">
-                    <span class="ctrl-label">Email</span>
-                    <input type="email" id="newUserEmail" placeholder="correo@empresa.com">
+                <div class="form-row-cols">
+                    <div class="ctrl-group">
+                        <span class="ctrl-label">Contraseña</span>
+                        <input type="password" id="newUserPass" placeholder="••••••••">
+                    </div>
+                    <div class="ctrl-group">
+                        <span class="ctrl-label">Rol</span>
+                        <select id="newUserRole" class="custom-select">
+                            <option value="member">Miembro</option>
+                            <option value="admin">Admin</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row-cols" style="margin-top:10px;">
+                    <div class="ctrl-group">
+                        <span class="ctrl-label">Departamento</span>
+                        <select id="newUserDept" class="custom-select">
+                            <option value="">Sin departamento</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row" style="display:flex;align-items:flex-end;gap:12px;">
+                    <div class="ctrl-group" style="flex:0;">
+                        <span class="ctrl-label">Color avatar</span>
+                        <button id="newUserColorPreview" class="color-preview-btn" style="background:#6366f1;" data-value="#6366f1"
+                            onclick="openColorPicker(this, this.dataset.value, c => { this.style.background=c; this.dataset.value=c; _newUserColor=c; })"
+                            title="Elegir color"></button>
+                    </div>
+                    <div class="ctrl-group">
+                        <span class="ctrl-label">&nbsp;</span>
+                        <button class="btn-add" onclick="createUser()" style="font-size:14px;padding:10px 16px;">＋ Crear usuario</button>
+                    </div>
                 </div>
             </div>
-            <div class="form-row-cols">
-                <div class="ctrl-group">
-                    <span class="ctrl-label">Contraseña</span>
-                    <input type="password" id="newUserPass" placeholder="••••••••">
-                </div>
-                <div class="ctrl-group">
-                    <span class="ctrl-label">Rol</span>
-                    <select id="newUserRole" class="custom-select">
-                        <option value="member">Miembro</option>
-                        <option value="admin">Admin</option>
-                    </select>
-                </div>
-            </div>
-            <div class="form-row" style="display:flex;align-items:flex-end;gap:12px;">
-                <div class="ctrl-group" style="flex:0;">
-                    <span class="ctrl-label">Color avatar</span>
-                    <button id="newUserColorPreview" class="color-preview-btn" style="background:#6366f1;" data-value="#6366f1"
-                        onclick="openColorPicker(this, this.dataset.value, c => { this.style.background=c; this.dataset.value=c; _newUserColor=c; })"
-                        title="Elegir color"></button>
-                </div>
-                <div class="ctrl-group">
-                    <span class="ctrl-label">&nbsp;</span>
-                    <button class="btn-add" onclick="createUser()" style="font-size:14px;padding:10px 16px;">＋ Crear usuario</button>
+        </div>
+
+        <!-- ── DEPTS TAB ── -->
+        <div id="deptsTabPanel" style="display:none;">
+            <h3 style="margin:0 0 14px;">Departamentos</h3>
+            <div id="deptsListEl" style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px;"></div>
+
+            <!-- Create dept -->
+            <div style="padding-top:14px;border-top:1px solid var(--border);">
+                <p style="margin:0 0 10px;font-weight:600;font-size:13px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;">Nuevo departamento</p>
+                <div style="display:flex;gap:8px;align-items:flex-end;">
+                    <div class="ctrl-group" style="flex:1;">
+                        <span class="ctrl-label">Nombre</span>
+                        <input type="text" id="newDeptName" placeholder="Ej. Logística">
+                    </div>
+                    <div class="ctrl-group" style="flex:0;">
+                        <span class="ctrl-label">Color</span>
+                        <button id="newDeptColorPreview" class="color-preview-btn" style="background:#6366f1;" data-value="#6366f1"
+                            onclick="openColorPicker(this, this.dataset.value, c => { this.style.background=c; this.dataset.value=c; _newDeptColor=c; })"
+                            title="Elegir color"></button>
+                    </div>
+                    <div class="ctrl-group" style="flex:0;">
+                        <span class="ctrl-label">&nbsp;</span>
+                        <button class="btn-add" onclick="createDept()" style="font-size:13px;padding:10px 14px;white-space:nowrap;">＋ Crear</button>
+                    </div>
                 </div>
             </div>
         </div>

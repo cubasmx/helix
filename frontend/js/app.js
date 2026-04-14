@@ -26,6 +26,8 @@ let tasksList      = [];
 /* ════════════════════════════════════════════════════════
    THEME
 ════════════════════════════════════════════════════════ */
+let _sessionUser = null; // logged-in user from JWT
+
 function setTheme(t) {
     document.documentElement.setAttribute('data-theme', t);
     localStorage.setItem(STORAGE_THEME, t);
@@ -36,8 +38,59 @@ function setTheme(t) {
     const gb = document.getElementById('gearBtn');
     if (dd) dd.classList.remove('open');
     if (gb) gb.classList.remove('open');
+    // Persist to server if user is logged in
+    if (_sessionUser?.id) {
+        fetch(`${BASE_URL}/users/${_sessionUser.id}/theme`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('helyx_token')}` },
+            body: JSON.stringify({ theme: t })
+        }).catch(() => {});
+    }
 }
-function loadTheme() { setTheme(localStorage.getItem(STORAGE_THEME) || 'light'); }
+function loadTheme() {
+    const saved = localStorage.getItem(STORAGE_THEME) || 'dark';
+    setTheme(saved);
+}
+
+/* Render header user/dept badge */
+function renderHeaderBadge(user) {
+    const bar  = document.getElementById('userInfoBar');
+    const av   = document.getElementById('headerAvatarXs');
+    const nm   = document.getElementById('headerUserName');
+    const dept = document.getElementById('headerDeptBadge');
+    if (!user || !bar) return;
+    av.textContent = user.name.charAt(0).toUpperCase();
+    av.style.background = user.avatar_color || '#6366f1';
+    nm.textContent = user.name;
+    if (user.department_name) {
+        dept.textContent = user.department_name;
+        dept.style.display = '';
+        if (user.department_color)
+            dept.style.setProperty('--accent', user.department_color);
+    } else {
+        dept.style.display = 'none';
+    }
+    bar.style.display = 'flex';
+}
+
+/* Attempt to recover session from localStorage token */
+async function restoreSession() {
+    const token = localStorage.getItem('helyx_token');
+    if (!token) return;
+    try {
+        const res = await fetch(`${BASE_URL}/auth/me`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (res.ok) {
+            _sessionUser = await res.json();
+            const savedTheme = localStorage.getItem(STORAGE_THEME) || _sessionUser.preferred_theme || 'dark';
+            setTheme(savedTheme);
+            renderHeaderBadge(_sessionUser);
+        } else {
+            localStorage.removeItem('helyx_token');
+        }
+    } catch(e) {}
+}
 
 function toggleThemeMenu() {
     const dd = document.getElementById('themeDropdown');
@@ -380,15 +433,34 @@ const USERS_API   = BASE_URL + '/users';
 const K_COLS_API  = BASE_URL + '/kanban/columns';
 const K_CARDS_API = BASE_URL + '/kanban/cards';
 const EVENTS_API  = BASE_URL + '/calendar/events';
+const DEPTS_API   = BASE_URL + '/departments';
+
+let deptsList = [];
 
 async function loadInitialData() {
     try {
-        const uRes = await fetch(USERS_API);
+        const [uRes, dRes] = await Promise.all([
+            fetch(USERS_API),
+            fetch(DEPTS_API)
+        ]);
         if (uRes.ok) usersList = await uRes.json();
+        if (dRes.ok) deptsList = await dRes.json();
     } catch(e) {}
     populateAssigneeSelects();
+    populateDeptSelect();
     await loadKanban();
     initCalendar();
+}
+
+function populateDeptSelect() {
+    const sel = document.getElementById('newUserDept');
+    if (!sel) return;
+    sel.innerHTML = '<option value="">Sin departamento</option>';
+    deptsList.forEach(d => {
+        const opt = document.createElement('option');
+        opt.value = d.id; opt.textContent = d.name;
+        sel.appendChild(opt);
+    });
 }
 
 function populateAssigneeSelects() {
@@ -1081,17 +1153,30 @@ async function saveConvertToKanban() {
 }
 
 /* ════════════════════════════════════════════════════════
-   USERS PANEL
+   USERS & DEPARTMENTS PANEL
 ════════════════════════════════════════════════════════ */
 let _newUserColor = '#6366f1';
+let _newDeptColor = '#6366f1';
+
+function switchUsersTab(tab) {
+    const isUsers = tab === 'users';
+    document.getElementById('usersTabPanel').style.display  = isUsers ? '' : 'none';
+    document.getElementById('deptsTabPanel').style.display  = isUsers ? 'none' : '';
+    document.getElementById('tabUsers').classList.toggle('active', isUsers);
+    document.getElementById('tabDepts').classList.toggle('active', !isUsers);
+    if (!isUsers) renderDeptsList();
+}
 
 function openUsersModal() {
     document.getElementById('usersModal').style.display = 'flex';
+    switchUsersTab('users');
     renderUsersList();
+    populateDeptSelect();
     document.getElementById('newUserName').value = '';
     document.getElementById('newUserEmail').value = '';
     document.getElementById('newUserPass').value = '';
     document.getElementById('newUserRole').value = 'member';
+    document.getElementById('newUserDept').value = '';
     _newUserColor = '#6366f1';
     document.getElementById('newUserColorPreview').style.background = _newUserColor;
     document.getElementById('newUserColorPreview').dataset.value = _newUserColor;
@@ -1107,10 +1192,13 @@ function renderUsersList() {
     usersList.forEach(u => {
         const item = document.createElement('div');
         item.className = 'user-item';
+        const deptLabel = u.department_name
+            ? `<span style="font-size:10px;padding:2px 7px;border-radius:99px;background:color-mix(in srgb,${u.department_color||'#6366f1'} 15%,transparent);color:${u.department_color||'#6366f1'};border:1px solid color-mix(in srgb,${u.department_color||'#6366f1'} 30%,transparent);font-weight:600;">${escHtml(u.department_name)}</span>`
+            : '';
         item.innerHTML = `
             <div class="user-avatar" style="background:${u.avatar_color}">${escHtml(u.name.charAt(0).toUpperCase())}</div>
             <div class="user-info">
-                <div class="user-name">${escHtml(u.name)}</div>
+                <div class="user-name">${escHtml(u.name)} ${deptLabel}</div>
                 <div class="user-email">${escHtml(u.email)}</div>
             </div>
             <span class="user-role-badge ${u.role === 'admin' ? 'admin' : ''}">${u.role}</span>
@@ -1119,32 +1207,102 @@ function renderUsersList() {
     });
 }
 
+function renderDeptsList() {
+    const list = document.getElementById('deptsListEl');
+    if (!list) return;
+    list.innerHTML = '';
+    if (!deptsList.length) {
+        list.innerHTML = '<p style="color:var(--text-muted);font-size:13px;text-align:center;padding:12px">No hay departamentos.</p>';
+        return;
+    }
+    deptsList.forEach(d => {
+        const item = document.createElement('div');
+        item.className = 'user-item';
+        item.style.display = 'flex'; item.style.alignItems = 'center'; item.style.gap = '10px';
+        item.innerHTML = `
+            <div style="width:18px;height:18px;border-radius:50%;background:${d.color};border:2px solid rgba(255,255,255,.2);flex-shrink:0;"></div>
+            <span style="flex:1;font-weight:600;font-size:14px;">${escHtml(d.name)}</span>
+            <button class="delete-btn" title="Eliminar departamento" onclick="deleteDept(${d.id})">×</button>`;
+        list.appendChild(item);
+    });
+}
+
 async function createUser() {
-    const name  = document.getElementById('newUserName').value.trim();
-    const email = document.getElementById('newUserEmail').value.trim();
-    const pass  = document.getElementById('newUserPass').value;
-    const role  = document.getElementById('newUserRole').value;
-    const color = _newUserColor;
+    const name    = document.getElementById('newUserName').value.trim();
+    const email   = document.getElementById('newUserEmail').value.trim();
+    const pass    = document.getElementById('newUserPass').value;
+    const role    = document.getElementById('newUserRole').value;
+    const color   = _newUserColor;
+    const deptId  = document.getElementById('newUserDept').value || null;
     if (!name || !email || !pass) return showToast('⚠️ Nombre, email y contraseña requeridos', 'warn');
     try {
         const res = await fetch(USERS_API, {
             method: 'POST', headers:{'Content-Type':'application/json'},
-            body: JSON.stringify({ name, email, password: pass, role, avatar_color: color })
+            body: JSON.stringify({ name, email, password: pass, role, avatar_color: color, department_id: deptId })
         });
         if (res.ok) {
             const u = await res.json();
+            // Attach dept info for local render
+            const dept = deptsList.find(d => d.id == deptId);
+            if (dept) { u.department_name = dept.name; u.department_color = dept.color; }
             usersList.push(u);
             renderUsersList();
             populateAssigneeSelects();
             document.getElementById('newUserName').value  = '';
             document.getElementById('newUserEmail').value = '';
             document.getElementById('newUserPass').value  = '';
+            document.getElementById('newUserDept').value  = '';
             showToast(`✅ Usuario "${name}" creado`);
         } else {
             const err = await res.json();
             showToast('⚠️ ' + (err.error || 'Error'), 'warn');
         }
     } catch(e) { showToast('⚠️ Error de conexión', 'warn'); }
+}
+
+async function createDept() {
+    const name  = document.getElementById('newDeptName').value.trim();
+    const color = _newDeptColor;
+    if (!name) return showToast('⚠️ Escribe el nombre del departamento', 'warn');
+    const token = localStorage.getItem('helyx_token');
+    try {
+        const res = await fetch(DEPTS_API, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+            body: JSON.stringify({ name, color })
+        });
+        if (res.ok) {
+            const d = await res.json();
+            deptsList.push(d);
+            renderDeptsList();
+            populateDeptSelect();
+            document.getElementById('newDeptName').value = '';
+            showToast(`✅ Departamento "${name}" creado`);
+        } else {
+            const err = await res.json();
+            showToast('⚠️ ' + (err.error || 'Error'), 'warn');
+        }
+    } catch(e) { showToast('⚠️ Error de conexión', 'warn'); }
+}
+
+async function deleteDept(id) {
+    const d = deptsList.find(x => x.id === id);
+    if (!confirm(`¿Eliminar departamento "${d?.name}"? Los usuarios quedarán sin departamento.`)) return;
+    const token = localStorage.getItem('helyx_token');
+    try {
+        const res = await fetch(`${DEPTS_API}/${id}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (res.ok) {
+            deptsList = deptsList.filter(x => x.id !== id);
+            renderDeptsList();
+            populateDeptSelect();
+            // Remove dept from local users
+            usersList.forEach(u => { if (u.department_id == id) { u.department_id = null; u.department_name = null; } });
+            showToast('🗑️ Departamento eliminado');
+        }
+    } catch(e) { showToast('⚠️ Error', 'warn'); }
 }
 
 async function deleteUser(id) {
@@ -1167,4 +1325,4 @@ loadTheme();
 buildCalendarData();
 renderHeaders();
 loadTasks();
-loadInitialData();
+restoreSession().then(() => loadInitialData());

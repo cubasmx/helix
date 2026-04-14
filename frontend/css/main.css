@@ -203,7 +203,55 @@ body {
     justify-content: space-between;
     margin-bottom: 16px;
     gap: 10px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--border);
+    position: relative;
 }
+.app-header::after {
+    content: '';
+    position: absolute;
+    bottom: -1px; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--accent), transparent 70%);
+    border-radius: 1px;
+    opacity: 0.6;
+    transition: opacity var(--transition);
+}
+.app-header:hover::after { opacity: 1; }
+
+/* Dept + user badge in header */
+.user-info-bar {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 12px; color: var(--text-muted);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 50px;
+    padding: 4px 10px 4px 5px;
+    box-shadow: var(--shadow);
+    cursor: default;
+    transition: box-shadow .2s, border-color .2s;
+}
+.user-info-bar:hover { box-shadow: var(--shadow-md); border-color: var(--accent); }
+.user-avatar-xs {
+    width: 22px; height: 22px; border-radius: 50%;
+    color: #fff; font-weight: 700; font-size: 10px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    border: 1.5px solid rgba(255,255,255,.25);
+}
+.dept-badge {
+    font-size: 10px; font-weight: 600;
+    padding: 2px 7px; border-radius: 99px;
+    background: color-mix(in srgb, var(--accent) 15%, transparent);
+    color: var(--accent);
+    border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
+    white-space: nowrap;
+    transition: background .15s;
+}
+.user-info-bar:hover .dept-badge {
+    background: color-mix(in srgb, var(--accent) 25%, transparent);
+}
+
 .app-title { display: flex; flex-direction: column; }
 .app-title h1 {
     margin: 0;
@@ -362,6 +410,7 @@ textarea {
     background: var(--surface-2);
     color: var(--text);
     -webkit-appearance: none;
+    appearance: none;
     transition: border-color .15s, box-shadow .15s;
     resize: vertical;
 }
@@ -405,7 +454,18 @@ input[type="color"] {
     transition: background .18s, transform .12s, box-shadow .18s;
     letter-spacing: .2px;
     box-shadow: 0 2px 8px color-mix(in srgb, var(--accent) 30%, transparent);
+    position: relative; overflow: hidden;
 }
+.btn-add::after {
+    content: '';
+    position: absolute;
+    top: 0; left: -75%;
+    width: 50%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,.18), transparent);
+    transform: skewX(-20deg);
+    transition: left .5s ease;
+}
+.btn-add:hover::after { left: 130%; }
 .btn-add:hover {
     background: var(--accent-h);
     box-shadow: 0 4px 14px color-mix(in srgb, var(--accent) 38%, transparent);
@@ -462,6 +522,12 @@ input[type="color"] {
     animation: fadeUp .22s ease both;
     position: relative;
     overflow: hidden;
+    transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+}
+.task-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px color-mix(in srgb, var(--task-color, var(--accent)) 20%, rgba(0,0,0,.15));
+    border-color: color-mix(in srgb, var(--task-color, var(--accent)) 40%, var(--border));
 }
 @keyframes fadeUp {
     from { opacity: 0; transform: translateY(8px); }
@@ -690,7 +756,24 @@ td:hover .task-bar { filter: brightness(1.1); }
     border-radius: var(--radius);
     box-shadow: var(--shadow);
     border: 1px solid var(--border);
+    transition: box-shadow .25s ease, border-color .25s ease;
+    position: relative;
 }
+.section-region::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; bottom: 0;
+    width: 3px;
+    background: var(--accent);
+    border-radius: var(--radius) 0 0 var(--radius);
+    opacity: 0;
+    transition: opacity .25s ease;
+}
+.section-region:hover {
+    box-shadow: var(--shadow-md);
+    border-color: color-mix(in srgb, var(--accent) 25%, var(--border));
+}
+.section-region:hover::before { opacity: 1; }
 .section-header {
     display: flex; justify-content: space-between; align-items: center;
     margin-bottom: 20px; gap: 12px; flex-wrap: wrap;
@@ -711,8 +794,12 @@ td:hover .task-bar { filter: brightness(1.1); }
     border-radius: var(--radius-sm);
     min-width: 270px; max-width: 270px;
     display: flex; flex-direction: column;
-    transition: box-shadow .2s, transform .15s, opacity .15s;
+    transition: box-shadow .2s, transform .15s, opacity .15s, border-color .2s;
     flex-shrink: 0;
+    border-top: 3px solid var(--col-color, var(--border));
+}
+.kanban-col:hover {
+    box-shadow: 0 4px 16px color-mix(in srgb, var(--col-color, var(--accent)) 18%, rgba(0,0,0,.1));
 }
 /* Column drag states */
 .kanban-col.col-dragging {
@@ -774,10 +861,14 @@ td:hover .task-bar { filter: brightness(1.1); }
     border-radius: var(--radius-xs);
     padding: 10px; cursor: grab;
     box-shadow: var(--shadow);
-    transition: transform 0.15s, box-shadow 0.15s, opacity .15s;
+    transition: transform 0.18s ease, box-shadow 0.18s ease, opacity .15s;
     animation: fadeUp .18s ease both;
 }
-.kanban-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
+.kanban-card:hover {
+    box-shadow: 0 6px 20px color-mix(in srgb, var(--card-color, var(--accent)) 25%, rgba(0,0,0,.15));
+    transform: translateY(-3px);
+    border-left-color: color-mix(in srgb, var(--card-color, var(--accent)) 90%, white 10%);
+}
 .kanban-card:active { cursor: grabbing; }
 .kanban-card.card-dragging { opacity: 0.45; transform: scale(0.97); }
 .kanban-card-title { font-weight: 600; font-size: 13px; margin-bottom: 4px; word-break: break-word; }
@@ -802,8 +893,21 @@ td:hover .task-bar { filter: brightness(1.1); }
     color: #fff; display: flex; align-items: center; justify-content: center;
     font-weight: 700; font-size: 10px; flex-shrink: 0;
     border: 1.5px solid rgba(255,255,255,0.3);
-    title: attr(title);
 }
+
+/* Modal tabs */
+.modal-tab {
+    padding: 10px 8px;
+    border: none; background: transparent;
+    font-family: var(--font); font-size: 13px; font-weight: 600;
+    color: var(--text-muted); cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: color .15s, border-color .15s;
+    margin-bottom: -2px;
+}
+.modal-tab:hover { color: var(--text); }
+.modal-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
 
 /* Convert buttons inside card modal */
 .convert-actions {
