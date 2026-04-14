@@ -22,11 +22,16 @@
         <button class="btn-users" onclick="openUsersModal()" id="btnUsers" title="Gestión de usuarios">
             👥 Usuarios
         </button>
-        <div class="theme-switcher" role="group" aria-label="Selector de tema">
-            <button class="theme-btn active" data-theme-val="light" title="Claro"          onclick="setTheme('light')">☀️</button>
-            <button class="theme-btn"        data-theme-val="dark"  title="Oscuro"         onclick="setTheme('dark')">🌙</button>
-            <button class="theme-btn"        data-theme-val="sepia" title="Sepia"          onclick="setTheme('sepia')">📜</button>
-            <button class="theme-btn"        data-theme-val="contrast" title="Alto contraste" onclick="setTheme('contrast')">⬛</button>
+        <div class="theme-menu-wrap" id="themeMenuWrap">
+            <button class="gear-btn" id="gearBtn" onclick="toggleThemeMenu()" title="Cambiar tema">⚙️</button>
+            <div class="theme-dropdown" id="themeDropdown">
+                <button class="theme-option" data-theme-val="light"   onclick="setTheme('light')"   >☀️ Claro</button>
+                <button class="theme-option" data-theme-val="dark"    onclick="setTheme('dark')"    >🌙 Oscuro</button>
+                <button class="theme-option" data-theme-val="sepia"   onclick="setTheme('sepia')"   >📜 Sepia</button>
+                <button class="theme-option" data-theme-val="contrast" onclick="setTheme('contrast')">⬛ Alto contraste</button>
+                <button class="theme-option" data-theme-val="ocean"   onclick="setTheme('ocean')"   >🌊 Océano</button>
+                <button class="theme-option" data-theme-val="forest"  onclick="setTheme('forest')"  >🌿 Bosque</button>
+            </div>
         </div>
     </div>
 </header>

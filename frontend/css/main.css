@@ -95,6 +95,48 @@
     --m8:#332900;--m9:#0a0033;--m10:#001a1a;--m11:#33000d;
 }
 
+/* ─── OCEAN ──────────────────────────────────────────── */
+[data-theme="ocean"] {
+    --bg:          #050d1a;
+    --surface:     #0a1628;
+    --surface-2:   #071220;
+    --border:      #132238;
+    --text:        #c8e6f5;
+    --text-muted:  #5591b8;
+    --accent:      #00b4d8;
+    --accent-h:    #0096c7;
+    --accent-fg:   #050d1a;
+    --hdr-bg:      #020810;
+    --hdr-fg:      #90e0ef;
+    --today-bg:    rgba(0,180,216,.15);
+    --today-bd:    #00b4d8;
+    --danger:      #ff6b6b;
+    --m0:#051528;--m1:#0e1228;--m2:#051a18;--m3:#1a1000;
+    --m4:#001a1a;--m5:#1a0a0f;--m6:#1a0a15;--m7:#071a10;
+    --m8:#1a1400;--m9:#080f28;--m10:#031a1a;--m11:#1a0505;
+}
+
+/* ─── FOREST ─────────────────────────────────────────── */
+[data-theme="forest"] {
+    --bg:          #0d1a0d;
+    --surface:     #162616;
+    --surface-2:   #111e11;
+    --border:      #1e3a1e;
+    --text:        #d4edd4;
+    --text-muted:  #6b9e6b;
+    --accent:      #52b788;
+    --accent-h:    #40916c;
+    --accent-fg:   #0d1a0d;
+    --hdr-bg:      #060f06;
+    --hdr-fg:      #b7e4c7;
+    --today-bg:    rgba(82,183,136,.15);
+    --today-bd:    #52b788;
+    --danger:      #ff6b6b;
+    --m0:#071528;--m1:#1a0f28;--m2:#071a12;--m3:#1a1200;
+    --m4:#001a14;--m5:#1a0709;--m6:#1a0713;--m7:#071a0e;
+    --m8:#1a1500;--m9:#0c0f28;--m10:#001a14;--m11:#1a0707;
+}
+
 /* ════════════════════════════════════════════════════════
    RESET & BASE
 ════════════════════════════════════════════════════════ */
@@ -177,6 +219,52 @@ body {
     white-space: nowrap;
 }
 .btn-users:hover { background: var(--surface-2); box-shadow: var(--shadow-md); }
+
+/* Gear / Theme Menu */
+.theme-menu-wrap { position: relative; }
+.gear-btn {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    cursor: pointer;
+    font-size: 17px;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: var(--shadow);
+    transition: transform .35s cubic-bezier(.4,0,.2,1), background .15s;
+    flex-shrink: 0;
+}
+.gear-btn:hover { transform: rotate(60deg); background: var(--surface-2); }
+.gear-btn.open  { transform: rotate(90deg); }
+.theme-dropdown {
+    position: absolute;
+    right: 0; top: calc(100% + 9px);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    box-shadow: var(--shadow-md);
+    padding: 6px;
+    min-width: 170px;
+    z-index: 9000;
+    animation: slideUp .15s ease;
+    display: none;
+}
+.theme-dropdown.open { display: block; }
+.theme-option {
+    display: flex; align-items: center; gap: 10px;
+    width: 100%; padding: 8px 12px;
+    border: none; background: transparent;
+    font-family: var(--font); font-size: 13px; font-weight: 500;
+    color: var(--text); cursor: pointer;
+    border-radius: var(--radius-xs);
+    transition: background .12s;
+    text-align: left; white-space: nowrap;
+}
+.theme-option:hover { background: var(--surface-2); }
+.theme-option.active {
+    background: color-mix(in srgb, var(--accent) 14%, transparent);
+    color: var(--accent);
+}
 
 /* ════════════════════════════════════════════════════════
    CONTROLS — MOBILE FIRST

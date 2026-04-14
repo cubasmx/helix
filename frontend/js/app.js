@@ -29,11 +29,32 @@ let tasksList      = [];
 function setTheme(t) {
     document.documentElement.setAttribute('data-theme', t);
     localStorage.setItem(STORAGE_THEME, t);
-    document.querySelectorAll('.theme-btn').forEach(b =>
+    document.querySelectorAll('.theme-option').forEach(b =>
         b.classList.toggle('active', b.dataset.themeVal === t)
     );
+    const dd = document.getElementById('themeDropdown');
+    const gb = document.getElementById('gearBtn');
+    if (dd) dd.classList.remove('open');
+    if (gb) gb.classList.remove('open');
 }
 function loadTheme() { setTheme(localStorage.getItem(STORAGE_THEME) || 'light'); }
+
+function toggleThemeMenu() {
+    const dd = document.getElementById('themeDropdown');
+    const gb = document.getElementById('gearBtn');
+    if (!dd) return;
+    const isOpen = dd.classList.contains('open');
+    dd.classList.toggle('open', !isOpen);
+    if (gb) gb.classList.toggle('open', !isOpen);
+}
+document.addEventListener('click', (e) => {
+    if (!e.target.closest('#themeMenuWrap')) {
+        const dd = document.getElementById('themeDropdown');
+        const gb = document.getElementById('gearBtn');
+        if (dd) dd.classList.remove('open');
+        if (gb) gb.classList.remove('open');
+    }
+});
 
 /* ════════════════════════════════════════════════════════
    VIEW TOGGLE (mobile)
@@ -594,6 +615,12 @@ function buildKanbanCard(col, card) {
     kCard.dataset.colId  = col.id;
     kCard.addEventListener('dragstart', handleCardDragStart);
     kCard.addEventListener('dragend',   handleCardDragEnd);
+    // Double-click to open edit modal
+    kCard.addEventListener('dblclick', (e) => {
+        // Ignore if clicking a button or action element
+        if (e.target.closest('button')) return;
+        openCardModal(col.id, card.id);
+    });
 
     let badgeHtml = '';
     if (card.assignee_id) {
