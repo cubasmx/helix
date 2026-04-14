@@ -1,13 +1,13 @@
 <!DOCTYPE html>
-<!-- saved from url=(0023)http://10.10.2.63:8081/ -->
-<html lang="es" data-theme="light"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    
+<html lang="es" data-theme="light">
+<head>
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Plan de Trabajo 2026 — Gantt Dinámico</title>
-    <meta name="description" content="Planificador Gantt anual interactivo con temas y gestión de tareas por semana.">
+    <meta name="description" content="Planificador Gantt anual interactivo con Kanban, Calendario y gestión de tareas por semana.">
     <link rel="preconnect" href="https://fonts.googleapis.com/">
     <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin="">
-    <link href="./Plan de Trabajo 2026 — Gantt Dinámico_files/css2" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="./css/main.css" rel="stylesheet">
 </head>
 <body>
@@ -18,37 +18,43 @@
         <h1>📅 Plan 2026</h1>
         <span class="subtitle" id="weekInfo">Semana 13 de 2026</span>
     </div>
-    <div class="theme-switcher" role="group" aria-label="Selector de tema">
-        <button class="theme-btn active" data-theme-val="light" title="Claro" onclick="setTheme(&#39;light&#39;)">☀️</button>
-        <button class="theme-btn" data-theme-val="dark" title="Oscuro" onclick="setTheme(&#39;dark&#39;)">🌙</button>
-        <button class="theme-btn" data-theme-val="sepia" title="Sepia" onclick="setTheme(&#39;sepia&#39;)">📜</button>
-        <button class="theme-btn" data-theme-val="contrast" title="Alto contraste" onclick="setTheme(&#39;contrast&#39;)">⬛</button>
+    <div class="header-actions">
+        <button class="btn-users" onclick="openUsersModal()" id="btnUsers" title="Gestión de usuarios">
+            👥 Usuarios
+        </button>
+        <div class="theme-switcher" role="group" aria-label="Selector de tema">
+            <button class="theme-btn active" data-theme-val="light" title="Claro"          onclick="setTheme('light')">☀️</button>
+            <button class="theme-btn"        data-theme-val="dark"  title="Oscuro"         onclick="setTheme('dark')">🌙</button>
+            <button class="theme-btn"        data-theme-val="sepia" title="Sepia"          onclick="setTheme('sepia')">📜</button>
+            <button class="theme-btn"        data-theme-val="contrast" title="Alto contraste" onclick="setTheme('contrast')">⬛</button>
+        </div>
     </div>
 </header>
 
-<!-- ══ CONTROLS ════════════════════════════════════════ -->
-<section class="controls" aria-label="Agregar tarea">
-    <!-- Row 1: name (full width on mobile) -->
+<!-- ══ CONTROLS (Gantt) ═══════════════════════════════ -->
+<section class="controls" aria-label="Agregar tarea al Gantt">
     <div class="ctrl-group" style="flex: 1 1 200px;">
         <span class="ctrl-label">Nombre de tarea</span>
         <input type="text" id="taskName" placeholder="Ej. COMPAQi — instalación" autocomplete="off">
     </div>
-    <!-- Row 2: start + duration on same row -->
     <div class="ctrl-row" style="flex: 1 1 200px;">
         <div class="ctrl-group">
             <span class="ctrl-label">S. Inicio</span>
             <input type="number" id="startWeek" placeholder="1–53" min="1" max="53">
         </div>
         <div class="ctrl-group">
-            <span class="ctrl-label">Duración</span>
+            <span class="ctrl-label">Duración (sem.)</span>
             <input type="number" id="duration" placeholder="Semanas" min="1">
         </div>
     </div>
-    <!-- Row 3: color + button -->
-    <div class="ctrl-color-row" style="flex: 1 1 140px;">
+    <div class="ctrl-color-row" style="flex: 1 1 140px; align-items: flex-end; gap: 8px;">
         <div class="ctrl-group" style="flex-shrink:0;">
             <span class="ctrl-label">Color</span>
-            <input type="color" id="taskColor" value="#4f46e5" title="Color de la tarea">
+            <button id="taskColor" class="color-preview-btn"
+                    style="background:#4f46e5; width:44px; height:44px;"
+                    data-value="#4f46e5"
+                    onclick="openColorPicker(this, this.dataset.value, c => { this.style.background=c; this.dataset.value=c; })"
+                    title="Elegir color"></button>
         </div>
         <div class="ctrl-group">
             <span class="ctrl-label">&nbsp;</span>
@@ -59,200 +65,124 @@
 
 <!-- ══ VIEW TOGGLE (mobile only) ══════════════════════ -->
 <div class="view-toggle" id="viewToggle" role="tablist">
-    <button class="view-toggle-btn active" id="btnCards" onclick="switchView(&#39;cards&#39;)" role="tab">
-        ☰ Tarjetas
-    </button>
-    <button class="view-toggle-btn" id="btnTable" onclick="switchView(&#39;table&#39;)" role="tab">
-        📊 Gantt
-    </button>
+    <button class="view-toggle-btn active" id="btnCards" onclick="switchView('cards')" role="tab">☰ Tarjetas</button>
+    <button class="view-toggle-btn"        id="btnTable" onclick="switchView('table')" role="tab">📊 Gantt</button>
 </div>
 
 <!-- ══ CARD VIEW (mobile default) ════════════════════ -->
-<section id="cardView" aria-label="Vista de tarjetas"><article class="task-card" style="--task-color: #a78bfa;">
-            <div class="card-header">
-                <span class="card-name">Sistema de tickets - bien implementado</span>
-                <div class="card-actions">
-                    <span class="card-color-btn" style="background:#a78bfa" title="Cambiar color">
-                        <input type="color" value="#a78bfa" data-id="1">
-                    </span>
-                    <button class="card-delete" data-id="1" title="Eliminar">×</button>
-                </div>
-            </div>
-
-            <div class="card-timeline">
-                <div class="timeline-track">
-                    <div class="timeline-fill" style="left:11.3%;width:7.5%;background:#a78bfa;opacity:.85;"></div>
-                    <div class="timeline-today-marker" style="left:22.6%"></div>
-                </div>
-            </div>
-
-            <div class="card-meta">
-                <span>S7 → S10</span>
-                <div style="display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end">
-                    <span class="card-badge">⏱ 4 sem.</span>
-                    
-                </div>
-            </div>
-        </article><article class="task-card" style="--task-color: #3b82f6;">
-            <div class="card-header">
-                <span class="card-name">COMPAQi - instalación de servidor</span>
-                <div class="card-actions">
-                    <span class="card-color-btn" style="background:#3b82f6" title="Cambiar color">
-                        <input type="color" value="#3b82f6" data-id="2">
-                    </span>
-                    <button class="card-delete" data-id="2" title="Eliminar">×</button>
-                </div>
-            </div>
-
-            <div class="card-timeline">
-                <div class="timeline-track">
-                    <div class="timeline-fill" style="left:18.9%;width:3.8%;background:#3b82f6;opacity:.85;"></div>
-                    <div class="timeline-today-marker" style="left:22.6%"></div>
-                </div>
-            </div>
-
-            <div class="card-meta">
-                <span>S11 → S12</span>
-                <div style="display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end">
-                    <span class="card-badge">⏱ 2 sem.</span>
-                    
-                </div>
-            </div>
-        </article><article class="task-card" style="--task-color: #10b981;">
-            <div class="card-header">
-                <span class="card-name">Active directory - Configuración</span>
-                <div class="card-actions">
-                    <span class="card-color-btn" style="background:#10b981" title="Cambiar color">
-                        <input type="color" value="#10b981" data-id="3">
-                    </span>
-                    <button class="card-delete" data-id="3" title="Eliminar">×</button>
-                </div>
-            </div>
-
-            <div class="card-timeline">
-                <div class="timeline-track">
-                    <div class="timeline-fill" style="left:0.0%;width:32.1%;background:#10b981;opacity:.85;"></div>
-                    <div class="timeline-today-marker" style="left:22.6%"></div>
-                </div>
-            </div>
-
-            <div class="card-meta">
-                <span>S1 → S17</span>
-                <div style="display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end">
-                    <span class="card-badge">⏱ 17 sem.</span>
-                    <span class="card-badge" style="color:var(--accent);border-color:var(--accent)">● Activa</span>
-                </div>
-            </div>
-        </article><article class="task-card" style="--task-color: #f59e0b;">
-            <div class="card-header">
-                <span class="card-name">Habilitación pantalla de Soldadura</span>
-                <div class="card-actions">
-                    <span class="card-color-btn" style="background:#f59e0b" title="Cambiar color">
-                        <input type="color" value="#f59e0b" data-id="4">
-                    </span>
-                    <button class="card-delete" data-id="4" title="Eliminar">×</button>
-                </div>
-            </div>
-
-            <div class="card-timeline">
-                <div class="timeline-track">
-                    <div class="timeline-fill" style="left:20.8%;width:37.7%;background:#f59e0b;opacity:.85;"></div>
-                    <div class="timeline-today-marker" style="left:22.6%"></div>
-                </div>
-            </div>
-
-            <div class="card-meta">
-                <span>S12 → S31</span>
-                <div style="display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end">
-                    <span class="card-badge">⏱ 20 sem.</span>
-                    <span class="card-badge" style="color:var(--accent);border-color:var(--accent)">● Activa</span>
-                </div>
-            </div>
-        </article></section>
+<section id="cardView" aria-label="Vista de tarjetas"></section>
 
 <!-- ══ TABLE VIEW (Gantt) ════════════════════════════ -->
 <div id="tableView">
     <div class="table-container">
         <table id="ganttTable">
-            <thead id="ganttHead"><tr><th class="task-name-col" rowspan="2">Hito / Tarea</th><th class="month-header" colspan="5" style="background-color: var(--m0);">Enero</th><th class="month-header" colspan="4" style="background-color: var(--m1);">Febrero</th><th class="month-header" colspan="4" style="background-color: var(--m2);">Marzo</th><th class="month-header" colspan="5" style="background-color: var(--m3);">Abril</th><th class="month-header" colspan="4" style="background-color: var(--m4);">Mayo</th><th class="month-header" colspan="4" style="background-color: var(--m5);">Junio</th><th class="month-header" colspan="5" style="background-color: var(--m6);">Julio</th><th class="month-header" colspan="4" style="background-color: var(--m7);">Agosto</th><th class="month-header" colspan="4" style="background-color: var(--m8);">Septiembre</th><th class="month-header" colspan="5" style="background-color: var(--m9);">Octubre</th><th class="month-header" colspan="4" style="background-color: var(--m10);">Noviembre</th><th class="month-header" colspan="5" style="background-color: var(--m11);">Diciembre</th></tr><tr><th class="week-header" style="background-color: var(--m0);">1</th><th class="week-header" style="background-color: var(--m0);">2</th><th class="week-header" style="background-color: var(--m0);">3</th><th class="week-header" style="background-color: var(--m0);">4</th><th class="week-header" style="background-color: var(--m0);">5</th><th class="week-header" style="background-color: var(--m1);">6</th><th class="week-header" style="background-color: var(--m1);">7</th><th class="week-header" style="background-color: var(--m1);">8</th><th class="week-header" style="background-color: var(--m1);">9</th><th class="week-header" style="background-color: var(--m2);">10</th><th class="week-header" style="background-color: var(--m2);">11</th><th class="week-header" style="background-color: var(--m2);">12</th><th class="week-header is-today" style="background-color: var(--m2);">13</th><th class="week-header" style="background-color: var(--m3);">14</th><th class="week-header" style="background-color: var(--m3);">15</th><th class="week-header" style="background-color: var(--m3);">16</th><th class="week-header" style="background-color: var(--m3);">17</th><th class="week-header" style="background-color: var(--m3);">18</th><th class="week-header" style="background-color: var(--m4);">19</th><th class="week-header" style="background-color: var(--m4);">20</th><th class="week-header" style="background-color: var(--m4);">21</th><th class="week-header" style="background-color: var(--m4);">22</th><th class="week-header" style="background-color: var(--m5);">23</th><th class="week-header" style="background-color: var(--m5);">24</th><th class="week-header" style="background-color: var(--m5);">25</th><th class="week-header" style="background-color: var(--m5);">26</th><th class="week-header" style="background-color: var(--m6);">27</th><th class="week-header" style="background-color: var(--m6);">28</th><th class="week-header" style="background-color: var(--m6);">29</th><th class="week-header" style="background-color: var(--m6);">30</th><th class="week-header" style="background-color: var(--m6);">31</th><th class="week-header" style="background-color: var(--m7);">32</th><th class="week-header" style="background-color: var(--m7);">33</th><th class="week-header" style="background-color: var(--m7);">34</th><th class="week-header" style="background-color: var(--m7);">35</th><th class="week-header" style="background-color: var(--m8);">36</th><th class="week-header" style="background-color: var(--m8);">37</th><th class="week-header" style="background-color: var(--m8);">38</th><th class="week-header" style="background-color: var(--m8);">39</th><th class="week-header" style="background-color: var(--m9);">40</th><th class="week-header" style="background-color: var(--m9);">41</th><th class="week-header" style="background-color: var(--m9);">42</th><th class="week-header" style="background-color: var(--m9);">43</th><th class="week-header" style="background-color: var(--m9);">44</th><th class="week-header" style="background-color: var(--m10);">45</th><th class="week-header" style="background-color: var(--m10);">46</th><th class="week-header" style="background-color: var(--m10);">47</th><th class="week-header" style="background-color: var(--m10);">48</th><th class="week-header" style="background-color: var(--m11);">49</th><th class="week-header" style="background-color: var(--m11);">50</th><th class="week-header" style="background-color: var(--m11);">51</th><th class="week-header" style="background-color: var(--m11);">52</th><th class="week-header" style="background-color: var(--m11);">53</th></tr></thead>
-            <tbody id="ganttBody"><tr><td class="task-name-col"><div class="task-cell-content"><span class="tbl-color-swatch" title="Cambiar color" style="background-color: rgb(167, 139, 250);"><input type="color"></span><span class="task-label" title="Sistema de tickets - bien implementado">Sistema de tickets - bien implementado</span><button class="delete-btn" title="Eliminar">×</button></div></td><td style="background-color: var(--m0); opacity: 0.35;"></td><td style="background-color: var(--m0); opacity: 0.35;"></td><td style="background-color: var(--m0); opacity: 0.35;"></td><td style="background-color: var(--m0); opacity: 0.35;"></td><td style="background-color: var(--m0); opacity: 0.35;"></td><td style="background-color: var(--m1); opacity: 0.35;"></td><td><div class="task-bar" style="background-color: rgb(167, 139, 250);"></div></td><td><div class="task-bar" style="background-color: rgb(167, 139, 250);"></div></td><td><div class="task-bar" style="background-color: rgb(167, 139, 250);"></div></td><td><div class="task-bar" style="background-color: rgb(167, 139, 250);"></div></td><td style="background-color: var(--m2); opacity: 0.35;"></td><td style="background-color: var(--m2); opacity: 0.35;"></td><td class="is-today" style="background-color: var(--m2); opacity: 0.35;"></td><td style="background-color: var(--m3); opacity: 0.35;"></td><td style="background-color: var(--m3); opacity: 0.35;"></td><td style="background-color: var(--m3); opacity: 0.35;"></td><td style="background-color: var(--m3); opacity: 0.35;"></td><td style="background-color: var(--m3); opacity: 0.35;"></td><td style="background-color: var(--m4); opacity: 0.35;"></td><td style="background-color: var(--m4); opacity: 0.35;"></td><td style="background-color: var(--m4); opacity: 0.35;"></td><td style="background-color: var(--m4); opacity: 0.35;"></td><td style="background-color: var(--m5); opacity: 0.35;"></td><td style="background-color: var(--m5); opacity: 0.35;"></td><td style="background-color: var(--m5); opacity: 0.35;"></td><td style="background-color: var(--m5); opacity: 0.35;"></td><td style="background-color: var(--m6); opacity: 0.35;"></td><td style="background-color: var(--m6); opacity: 0.35;"></td><td style="background-color: var(--m6); opacity: 0.35;"></td><td style="background-color: var(--m6); opacity: 0.35;"></td><td style="background-color: var(--m6); opacity: 0.35;"></td><td style="background-color: var(--m7); opacity: 0.35;"></td><td style="background-color: var(--m7); opacity: 0.35;"></td><td style="background-color: var(--m7); opacity: 0.35;"></td><td style="background-color: var(--m7); opacity: 0.35;"></td><td style="background-color: var(--m8); opacity: 0.35;"></td><td style="background-color: var(--m8); opacity: 0.35;"></td><td style="background-color: var(--m8); opacity: 0.35;"></td><td style="background-color: var(--m8); opacity: 0.35;"></td><td style="background-color: var(--m9); opacity: 0.35;"></td><td style="background-color: var(--m9); opacity: 0.35;"></td><td style="background-color: var(--m9); opacity: 0.35;"></td><td style="background-color: var(--m9); opacity: 0.35;"></td><td style="background-color: var(--m9); opacity: 0.35;"></td><td style="background-color: var(--m10); opacity: 0.35;"></td><td style="background-color: var(--m10); opacity: 0.35;"></td><td style="background-color: var(--m10); opacity: 0.35;"></td><td style="background-color: var(--m10); opacity: 0.35;"></td><td style="background-color: var(--m11); opacity: 0.35;"></td><td style="background-color: var(--m11); opacity: 0.35;"></td><td style="background-color: var(--m11); opacity: 0.35;"></td><td style="background-color: var(--m11); opacity: 0.35;"></td><td style="background-color: var(--m11); opacity: 0.35;"></td></tr><tr><td class="task-name-col"><div class="task-cell-content"><span class="tbl-color-swatch" title="Cambiar color" style="background-color: rgb(59, 130, 246);"><input type="color"></span><span class="task-label" title="COMPAQi - instalación de servidor">COMPAQi - instalación de servidor</span><button class="delete-btn" title="Eliminar">×</button></div></td><td style="background-color: var(--m0); opacity: 0.35;"></td><td style="background-color: var(--m0); opacity: 0.35;"></td><td style="background-color: var(--m0); opacity: 0.35;"></td><td style="background-color: var(--m0); opacity: 0.35;"></td><td style="background-color: var(--m0); opacity: 0.35;"></td><td style="background-color: var(--m1); opacity: 0.35;"></td><td style="background-color: var(--m1); opacity: 0.35;"></td><td style="background-color: var(--m1); opacity: 0.35;"></td><td style="background-color: var(--m1); opacity: 0.35;"></td><td style="background-color: var(--m2); opacity: 0.35;"></td><td><div class="task-bar" style="background-color: rgb(59, 130, 246);"></div></td><td><div class="task-bar" style="background-color: rgb(59, 130, 246);"></div></td><td class="is-today" style="background-color: var(--m2); opacity: 0.35;"></td><td style="background-color: var(--m3); opacity: 0.35;"></td><td style="background-color: var(--m3); opacity: 0.35;"></td><td style="background-color: var(--m3); opacity: 0.35;"></td><td style="background-color: var(--m3); opacity: 0.35;"></td><td style="background-color: var(--m3); opacity: 0.35;"></td><td style="background-color: var(--m4); opacity: 0.35;"></td><td style="background-color: var(--m4); opacity: 0.35;"></td><td style="background-color: var(--m4); opacity: 0.35;"></td><td style="background-color: var(--m4); opacity: 0.35;"></td><td style="background-color: var(--m5); opacity: 0.35;"></td><td style="background-color: var(--m5); opacity: 0.35;"></td><td style="background-color: var(--m5); opacity: 0.35;"></td><td style="background-color: var(--m5); opacity: 0.35;"></td><td style="background-color: var(--m6); opacity: 0.35;"></td><td style="background-color: var(--m6); opacity: 0.35;"></td><td style="background-color: var(--m6); opacity: 0.35;"></td><td style="background-color: var(--m6); opacity: 0.35;"></td><td style="background-color: var(--m6); opacity: 0.35;"></td><td style="background-color: var(--m7); opacity: 0.35;"></td><td style="background-color: var(--m7); opacity: 0.35;"></td><td style="background-color: var(--m7); opacity: 0.35;"></td><td style="background-color: var(--m7); opacity: 0.35;"></td><td style="background-color: var(--m8); opacity: 0.35;"></td><td style="background-color: var(--m8); opacity: 0.35;"></td><td style="background-color: var(--m8); opacity: 0.35;"></td><td style="background-color: var(--m8); opacity: 0.35;"></td><td style="background-color: var(--m9); opacity: 0.35;"></td><td style="background-color: var(--m9); opacity: 0.35;"></td><td style="background-color: var(--m9); opacity: 0.35;"></td><td style="background-color: var(--m9); opacity: 0.35;"></td><td style="background-color: var(--m9); opacity: 0.35;"></td><td style="background-color: var(--m10); opacity: 0.35;"></td><td style="background-color: var(--m10); opacity: 0.35;"></td><td style="background-color: var(--m10); opacity: 0.35;"></td><td style="background-color: var(--m10); opacity: 0.35;"></td><td style="background-color: var(--m11); opacity: 0.35;"></td><td style="background-color: var(--m11); opacity: 0.35;"></td><td style="background-color: var(--m11); opacity: 0.35;"></td><td style="background-color: var(--m11); opacity: 0.35;"></td><td style="background-color: var(--m11); opacity: 0.35;"></td></tr><tr><td class="task-name-col"><div class="task-cell-content"><span class="tbl-color-swatch" title="Cambiar color" style="background-color: rgb(16, 185, 129);"><input type="color"></span><span class="task-label" title="Active directory - Configuración">Active directory - Configuración</span><button class="delete-btn" title="Eliminar">×</button></div></td><td><div class="task-bar" style="background-color: rgb(16, 185, 129);"></div></td><td><div class="task-bar" style="background-color: rgb(16, 185, 129);"></div></td><td><div class="task-bar" style="background-color: rgb(16, 185, 129);"></div></td><td><div class="task-bar" style="background-color: rgb(16, 185, 129);"></div></td><td><div class="task-bar" style="background-color: rgb(16, 185, 129);"></div></td><td><div class="task-bar" style="background-color: rgb(16, 185, 129);"></div></td><td><div class="task-bar" style="background-color: rgb(16, 185, 129);"></div></td><td><div class="task-bar" style="background-color: rgb(16, 185, 129);"></div></td><td><div class="task-bar" style="background-color: rgb(16, 185, 129);"></div></td><td><div class="task-bar" style="background-color: rgb(16, 185, 129);"></div></td><td><div class="task-bar" style="background-color: rgb(16, 185, 129);"></div></td><td><div class="task-bar" style="background-color: rgb(16, 185, 129);"></div></td><td class="is-today"><div class="task-bar" style="background-color: rgb(16, 185, 129);"></div></td><td><div class="task-bar" style="background-color: rgb(16, 185, 129);"></div></td><td><div class="task-bar" style="background-color: rgb(16, 185, 129);"></div></td><td><div class="task-bar" style="background-color: rgb(16, 185, 129);"></div></td><td><div class="task-bar" style="background-color: rgb(16, 185, 129);"></div></td><td style="background-color: var(--m3); opacity: 0.35;"></td><td style="background-color: var(--m4); opacity: 0.35;"></td><td style="background-color: var(--m4); opacity: 0.35;"></td><td style="background-color: var(--m4); opacity: 0.35;"></td><td style="background-color: var(--m4); opacity: 0.35;"></td><td style="background-color: var(--m5); opacity: 0.35;"></td><td style="background-color: var(--m5); opacity: 0.35;"></td><td style="background-color: var(--m5); opacity: 0.35;"></td><td style="background-color: var(--m5); opacity: 0.35;"></td><td style="background-color: var(--m6); opacity: 0.35;"></td><td style="background-color: var(--m6); opacity: 0.35;"></td><td style="background-color: var(--m6); opacity: 0.35;"></td><td style="background-color: var(--m6); opacity: 0.35;"></td><td style="background-color: var(--m6); opacity: 0.35;"></td><td style="background-color: var(--m7); opacity: 0.35;"></td><td style="background-color: var(--m7); opacity: 0.35;"></td><td style="background-color: var(--m7); opacity: 0.35;"></td><td style="background-color: var(--m7); opacity: 0.35;"></td><td style="background-color: var(--m8); opacity: 0.35;"></td><td style="background-color: var(--m8); opacity: 0.35;"></td><td style="background-color: var(--m8); opacity: 0.35;"></td><td style="background-color: var(--m8); opacity: 0.35;"></td><td style="background-color: var(--m9); opacity: 0.35;"></td><td style="background-color: var(--m9); opacity: 0.35;"></td><td style="background-color: var(--m9); opacity: 0.35;"></td><td style="background-color: var(--m9); opacity: 0.35;"></td><td style="background-color: var(--m9); opacity: 0.35;"></td><td style="background-color: var(--m10); opacity: 0.35;"></td><td style="background-color: var(--m10); opacity: 0.35;"></td><td style="background-color: var(--m10); opacity: 0.35;"></td><td style="background-color: var(--m10); opacity: 0.35;"></td><td style="background-color: var(--m11); opacity: 0.35;"></td><td style="background-color: var(--m11); opacity: 0.35;"></td><td style="background-color: var(--m11); opacity: 0.35;"></td><td style="background-color: var(--m11); opacity: 0.35;"></td><td style="background-color: var(--m11); opacity: 0.35;"></td></tr><tr><td class="task-name-col"><div class="task-cell-content"><span class="tbl-color-swatch" title="Cambiar color" style="background-color: rgb(245, 158, 11);"><input type="color"></span><span class="task-label" title="Habilitación pantalla de Soldadura">Habilitación pantalla de Soldadura</span><button class="delete-btn" title="Eliminar">×</button></div></td><td style="background-color: var(--m0); opacity: 0.35;"></td><td style="background-color: var(--m0); opacity: 0.35;"></td><td style="background-color: var(--m0); opacity: 0.35;"></td><td style="background-color: var(--m0); opacity: 0.35;"></td><td style="background-color: var(--m0); opacity: 0.35;"></td><td style="background-color: var(--m1); opacity: 0.35;"></td><td style="background-color: var(--m1); opacity: 0.35;"></td><td style="background-color: var(--m1); opacity: 0.35;"></td><td style="background-color: var(--m1); opacity: 0.35;"></td><td style="background-color: var(--m2); opacity: 0.35;"></td><td style="background-color: var(--m2); opacity: 0.35;"></td><td><div class="task-bar" style="background-color: rgb(245, 158, 11);"></div></td><td class="is-today"><div class="task-bar" style="background-color: rgb(245, 158, 11);"></div></td><td><div class="task-bar" style="background-color: rgb(245, 158, 11);"></div></td><td><div class="task-bar" style="background-color: rgb(245, 158, 11);"></div></td><td><div class="task-bar" style="background-color: rgb(245, 158, 11);"></div></td><td><div class="task-bar" style="background-color: rgb(245, 158, 11);"></div></td><td><div class="task-bar" style="background-color: rgb(245, 158, 11);"></div></td><td><div class="task-bar" style="background-color: rgb(245, 158, 11);"></div></td><td><div class="task-bar" style="background-color: rgb(245, 158, 11);"></div></td><td><div class="task-bar" style="background-color: rgb(245, 158, 11);"></div></td><td><div class="task-bar" style="background-color: rgb(245, 158, 11);"></div></td><td><div class="task-bar" style="background-color: rgb(245, 158, 11);"></div></td><td><div class="task-bar" style="background-color: rgb(245, 158, 11);"></div></td><td><div class="task-bar" style="background-color: rgb(245, 158, 11);"></div></td><td><div class="task-bar" style="background-color: rgb(245, 158, 11);"></div></td><td><div class="task-bar" style="background-color: rgb(245, 158, 11);"></div></td><td><div class="task-bar" style="background-color: rgb(245, 158, 11);"></div></td><td><div class="task-bar" style="background-color: rgb(245, 158, 11);"></div></td><td><div class="task-bar" style="background-color: rgb(245, 158, 11);"></div></td><td><div class="task-bar" style="background-color: rgb(245, 158, 11);"></div></td><td style="background-color: var(--m7); opacity: 0.35;"></td><td style="background-color: var(--m7); opacity: 0.35;"></td><td style="background-color: var(--m7); opacity: 0.35;"></td><td style="background-color: var(--m7); opacity: 0.35;"></td><td style="background-color: var(--m8); opacity: 0.35;"></td><td style="background-color: var(--m8); opacity: 0.35;"></td><td style="background-color: var(--m8); opacity: 0.35;"></td><td style="background-color: var(--m8); opacity: 0.35;"></td><td style="background-color: var(--m9); opacity: 0.35;"></td><td style="background-color: var(--m9); opacity: 0.35;"></td><td style="background-color: var(--m9); opacity: 0.35;"></td><td style="background-color: var(--m9); opacity: 0.35;"></td><td style="background-color: var(--m9); opacity: 0.35;"></td><td style="background-color: var(--m10); opacity: 0.35;"></td><td style="background-color: var(--m10); opacity: 0.35;"></td><td style="background-color: var(--m10); opacity: 0.35;"></td><td style="background-color: var(--m10); opacity: 0.35;"></td><td style="background-color: var(--m11); opacity: 0.35;"></td><td style="background-color: var(--m11); opacity: 0.35;"></td><td style="background-color: var(--m11); opacity: 0.35;"></td><td style="background-color: var(--m11); opacity: 0.35;"></td><td style="background-color: var(--m11); opacity: 0.35;"></td></tr></tbody>
+            <thead id="ganttHead"></thead>
+            <tbody id="ganttBody"></tbody>
         </table>
     </div>
 </div>
 
-<!-- ══ KANBAN VIEW ════════════════════════════════════ -->
-<section id="kanbanRegion" class="kanban-region">
-    <div class="kanban-header">
-        <h2>Tablero Kanban</h2>
-        <button class="btn-add" onclick="createKanbanColumn()">＋ Nueva Columna</button>
+<!-- ══ KANBAN ═══════════════════════════════════════════ -->
+<section id="kanbanRegion" class="section-region">
+    <div class="section-header">
+        <h2>🗂️ Tablero Kanban</h2>
+        <div class="section-header-actions">
+            <button class="btn-add" onclick="createKanbanColumn()" style="padding:9px 16px;font-size:13px;">
+                ＋ Nueva columna
+            </button>
+        </div>
     </div>
     <div class="kanban-board" id="kanbanBoard"></div>
 </section>
 
-<!-- ══ CALENDAR VIEW ══════════════════════════════════ -->
-<section id="calendarRegion" class="calendar-region">
-    <h2>Calendario Dinámico</h2>
+<!-- ══ CALENDAR ════════════════════════════════════════ -->
+<section id="calendarRegion" class="section-region">
+    <div class="section-header">
+        <h2>📅 Calendario</h2>
+    </div>
     <div id="fullCalendarRoot"></div>
 </section>
 
-<!-- ══ MODALS ═════════════════════════════════════════ -->
+<!-- ══════════════════════════════════════════════════════
+     MODALS
+══════════════════════════════════════════════════════ -->
+
+<!-- KANBAN CARD MODAL -->
 <div class="modal-overlay" id="kanbanCardModal" style="display:none;">
     <div class="modal-content">
         <h3 id="kcModalTitle">Editar Tarjeta</h3>
         <input type="hidden" id="kcId">
         <input type="hidden" id="kcColId">
-        
+
         <div class="ctrl-group">
             <span class="ctrl-label">Título</span>
             <input type="text" id="kcTitle" placeholder="Título de la tarjeta">
         </div>
-        <div class="ctrl-group" style="margin-top: 10px;">
+        <div class="ctrl-group form-row">
             <span class="ctrl-label">Descripción</span>
-            <textarea id="kcDesc" style="width:100%; padding: 8px; border:1px solid var(--border); border-radius:var(--radius-sm); font-family:var(--font); font-size:14px; background:var(--surface-2); color:var(--text);"></textarea>
+            <textarea id="kcDesc" placeholder="Descripción opcional…"></textarea>
         </div>
-        <div class="ctrl-row" style="margin-top: 10px;">
+        <div class="form-row-cols">
             <div class="ctrl-group">
                 <span class="ctrl-label">Asignado a</span>
                 <select id="kcAssignee" class="custom-select"></select>
             </div>
             <div class="ctrl-group">
-                <span class="ctrl-label">Fecha Límite</span>
-                <input type="date" id="kcDueDate" class="custom-select">
+                <span class="ctrl-label">Fecha límite</span>
+                <input type="date" id="kcDueDate">
             </div>
         </div>
-        <div class="ctrl-row" style="margin-top: 10px; align-items:flex-end;">
+        <div class="form-row" style="display:flex;align-items:center;gap:10px;">
             <div class="ctrl-group" style="flex:0;">
                 <span class="ctrl-label">Color</span>
-                <input type="color" id="kcColor" value="#6366f1">
+                <button id="kcColorPreview" class="color-preview-btn" style="background:#6366f1;" data-value="#6366f1"
+                    onclick="openColorPicker(this, this.dataset.value, c => { this.style.background=c; this.dataset.value=c; _currentCardColor=c; })"
+                    title="Elegir color"></button>
             </div>
-            <div style="flex:1; display:flex; justify-content:flex-end; gap:8px;">
-                <button class="btn-add" style="background:var(--surface-2); color:var(--text);" onclick="document.getElementById('kanbanCardModal').style.display='none'">Cancelar</button>
-                <button class="btn-add" onclick="saveKanbanCard()">Guardar</button>
-            </div>
+        </div>
+
+        <!-- Conversiones -->
+        <div class="convert-actions" id="convertActions" style="display:none;">
+            <button class="btn-convert" onclick="openConvertKanbanToGantt()" title="Convertir a proyecto del Gantt">
+                📊 → Gantt
+            </button>
+            <button class="btn-convert" onclick="openConvertKanbanToCalendar()" title="Agendar en el calendario">
+                📅 → Calendario
+            </button>
+        </div>
+
+        <div class="modal-footer">
+            <button class="btn-secondary" onclick="document.getElementById('kanbanCardModal').style.display='none'">Cancelar</button>
+            <button class="btn-add" onclick="saveKanbanCard()" style="padding:10px 20px;font-size:14px;">Guardar</button>
         </div>
     </div>
 </div>
 
+<!-- EVENT MODAL -->
 <div class="modal-overlay" id="eventModal" style="display:none;">
     <div class="modal-content">
         <h3 id="evModalTitle">Nuevo Evento</h3>
         <input type="hidden" id="evId">
-        
+
         <div class="ctrl-group">
             <span class="ctrl-label">Título</span>
             <input type="text" id="evTitle" placeholder="Título del evento">
         </div>
-        <div class="ctrl-row" style="margin-top: 10px;">
+        <div class="form-row-cols">
             <div class="ctrl-group">
                 <span class="ctrl-label">Inicio</span>
-                <input type="datetime-local" id="evStart" class="custom-select">
+                <input type="datetime-local" id="evStart">
             </div>
+            <div class="ctrl-group">
+                <span class="ctrl-label">Fin</span>
+                <input type="datetime-local" id="evEnd">
+            </div>
+        </div>
+        <div class="form-row-cols">
             <div class="ctrl-group">
                 <span class="ctrl-label">Asignado a</span>
                 <select id="evAssignee" class="custom-select"></select>
             </div>
-        </div>
-        <div class="ctrl-row" style="margin-top: 10px; align-items:flex-end;">
             <div class="ctrl-group">
                 <span class="ctrl-label">Prioridad</span>
                 <select id="evPriority" class="custom-select">
@@ -261,15 +191,177 @@
                     <option value="alta">Alta</option>
                 </select>
             </div>
+        </div>
+        <div class="form-row" style="display:flex;align-items:center;gap:10px;">
             <div class="ctrl-group" style="flex:0;">
                 <span class="ctrl-label">Color</span>
-                <input type="color" id="evColor" value="#10b981">
+                <button id="evColorPreview" class="color-preview-btn" style="background:#10b981;" data-value="#10b981"
+                    onclick="openColorPicker(this, this.dataset.value, c => { this.style.background=c; this.dataset.value=c; _currentEventColor=c; })"
+                    title="Elegir color"></button>
             </div>
         </div>
-        <div class="ctrl-row" style="margin-top: 16px; justify-content:flex-end; gap:8px;">
-            <button id="evDeleteBtn" class="btn-add" style="background:var(--danger); color:#fff; display:none;" onclick="deleteEvent()">Eliminar</button>
-            <button class="btn-add" style="background:var(--surface-2); color:var(--text);" onclick="document.getElementById('eventModal').style.display='none'">Cancelar</button>
-            <button class="btn-add" onclick="saveEvent()">Guardar</button>
+
+        <!-- Conversiones -->
+        <div class="convert-actions" id="evConvertActions" style="display:none;">
+            <button class="btn-convert" onclick="openConvertEventToGantt()" title="Convertir a proyecto del Gantt">
+                📊 → Gantt
+            </button>
+            <button class="btn-convert" onclick="openConvertEventToKanban()" title="Crear tarjeta en Kanban">
+                🗂️ → Kanban
+            </button>
+        </div>
+
+        <div class="modal-footer">
+            <button id="evDeleteBtn" class="btn-danger" onclick="deleteEvent()" style="display:none;">🗑️ Eliminar</button>
+            <button class="btn-secondary" onclick="document.getElementById('eventModal').style.display='none'">Cancelar</button>
+            <button class="btn-add" onclick="saveEvent()" style="padding:10px 20px;font-size:14px;">Guardar</button>
+        </div>
+    </div>
+</div>
+
+<!-- CONVERT → GANTT MODAL (shared for Kanban cards and Calendar events) -->
+<div class="modal-overlay" id="convertToGanttModal" style="display:none;">
+    <div class="mini-modal">
+        <h4>📊 Convertir a proyecto Gantt</h4>
+        <div class="ctrl-group">
+            <span class="ctrl-label">Nombre del proyecto</span>
+            <input type="text" id="ctgName" placeholder="Nombre en el Gantt">
+        </div>
+        <div class="form-row-cols">
+            <div class="ctrl-group">
+                <span class="ctrl-label">Semana de inicio</span>
+                <input type="number" id="ctgStart" placeholder="1–53" min="1" max="53">
+            </div>
+            <div class="ctrl-group">
+                <span class="ctrl-label">Duración (sem.)</span>
+                <input type="number" id="ctgDur" placeholder="1+" min="1">
+            </div>
+        </div>
+        <div class="form-row" style="display:flex;align-items:center;gap:10px;">
+            <div class="ctrl-group" style="flex:0;">
+                <span class="ctrl-label">Color</span>
+                <button id="ctgColorPreview" class="color-preview-btn" style="background:#4f46e5;" data-value="#4f46e5"
+                    onclick="openColorPicker(this, this.dataset.value, c => { this.style.background=c; this.dataset.value=c; })"
+                    title="Elegir color"></button>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-secondary" onclick="document.getElementById('convertToGanttModal').style.display='none'">Cancelar</button>
+            <button class="btn-add" onclick="saveConvertToGantt()" style="padding:10px 20px;font-size:14px;">✅ Agregar al Gantt</button>
+        </div>
+    </div>
+</div>
+
+<!-- CONVERT KANBAN → CALENDAR MODAL -->
+<div class="modal-overlay" id="convertToCalendarModal" style="display:none;">
+    <div class="mini-modal">
+        <h4>📅 Agendar en Calendario</h4>
+        <div class="ctrl-group">
+            <span class="ctrl-label">Título del evento</span>
+            <input type="text" id="ctcTitle" placeholder="Título">
+        </div>
+        <div class="form-row-cols">
+            <div class="ctrl-group">
+                <span class="ctrl-label">Inicio</span>
+                <input type="datetime-local" id="ctcStart">
+            </div>
+            <div class="ctrl-group">
+                <span class="ctrl-label">Fin</span>
+                <input type="datetime-local" id="ctcEnd">
+            </div>
+        </div>
+        <div class="form-row" style="display:flex;align-items:center;gap:10px;">
+            <div class="ctrl-group" style="flex:0;">
+                <span class="ctrl-label">Color</span>
+                <button id="ctcColorPreview" class="color-preview-btn" style="background:#10b981;" data-value="#10b981"
+                    onclick="openColorPicker(this, this.dataset.value, c => { this.style.background=c; this.dataset.value=c; })"
+                    title="Elegir color"></button>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-secondary" onclick="document.getElementById('convertToCalendarModal').style.display='none'">Cancelar</button>
+            <button class="btn-add" onclick="saveConvertToCalendar()" style="padding:10px 20px;font-size:14px;">✅ Agendar</button>
+        </div>
+    </div>
+</div>
+
+<!-- CONVERT EVENT → KANBAN MODAL -->
+<div class="modal-overlay" id="convertToKanbanModal" style="display:none;">
+    <div class="mini-modal">
+        <h4>🗂️ Convertir a tarjeta Kanban</h4>
+        <div class="ctrl-group">
+            <span class="ctrl-label">Título de la tarjeta</span>
+            <input type="text" id="ctkTitle" placeholder="Título">
+        </div>
+        <div class="ctrl-group form-row">
+            <span class="ctrl-label">Columna destino</span>
+            <select id="ctkColumn" class="custom-select"></select>
+        </div>
+        <div class="form-row" style="display:flex;align-items:center;gap:10px;">
+            <div class="ctrl-group" style="flex:0;">
+                <span class="ctrl-label">Color</span>
+                <button id="ctkColorPreview" class="color-preview-btn" style="background:#6366f1;" data-value="#6366f1"
+                    onclick="openColorPicker(this, this.dataset.value, c => { this.style.background=c; this.dataset.value=c; })"
+                    title="Elegir color"></button>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-secondary" onclick="document.getElementById('convertToKanbanModal').style.display='none'">Cancelar</button>
+            <button class="btn-add" onclick="saveConvertToKanban()" style="padding:10px 20px;font-size:14px;">✅ Crear tarjeta</button>
+        </div>
+    </div>
+</div>
+
+<!-- USERS MODAL -->
+<div class="modal-overlay" id="usersModal" style="display:none;">
+    <div class="modal-content" style="max-width:520px;">
+        <h3>👥 Gestión de Usuarios</h3>
+
+        <!-- Existing users -->
+        <div id="usersListEl" class="user-list"></div>
+
+        <!-- Create new user -->
+        <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--border);">
+            <p style="margin:0 0 12px;font-weight:600;font-size:13px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;">Nuevo usuario</p>
+            <div class="form-row-cols">
+                <div class="ctrl-group">
+                    <span class="ctrl-label">Nombre</span>
+                    <input type="text" id="newUserName" placeholder="Nombre completo">
+                </div>
+                <div class="ctrl-group">
+                    <span class="ctrl-label">Email</span>
+                    <input type="email" id="newUserEmail" placeholder="correo@empresa.com">
+                </div>
+            </div>
+            <div class="form-row-cols">
+                <div class="ctrl-group">
+                    <span class="ctrl-label">Contraseña</span>
+                    <input type="password" id="newUserPass" placeholder="••••••••">
+                </div>
+                <div class="ctrl-group">
+                    <span class="ctrl-label">Rol</span>
+                    <select id="newUserRole" class="custom-select">
+                        <option value="member">Miembro</option>
+                        <option value="admin">Admin</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-row" style="display:flex;align-items:flex-end;gap:12px;">
+                <div class="ctrl-group" style="flex:0;">
+                    <span class="ctrl-label">Color avatar</span>
+                    <button id="newUserColorPreview" class="color-preview-btn" style="background:#6366f1;" data-value="#6366f1"
+                        onclick="openColorPicker(this, this.dataset.value, c => { this.style.background=c; this.dataset.value=c; _newUserColor=c; })"
+                        title="Elegir color"></button>
+                </div>
+                <div class="ctrl-group">
+                    <span class="ctrl-label">&nbsp;</span>
+                    <button class="btn-add" onclick="createUser()" style="font-size:14px;padding:10px 16px;">＋ Crear usuario</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal-footer">
+            <button class="btn-secondary" onclick="document.getElementById('usersModal').style.display='none'">Cerrar</button>
         </div>
     </div>
 </div>
@@ -277,17 +369,16 @@
 <!-- FullCalendar CDN -->
 <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js'></script>
 
-<!-- ══ TOASTS ═════════════════════════════════════════ -->
+<!-- TOASTS -->
 <div class="toast-wrap" id="toastWrap"></div>
 
-<!-- ══ ENV CONFIG (override per environment) ════════════ -->
+<!-- ENV CONFIG -->
 <script>
-  // Equivalent to: os.getenv("SERVICE_URL", "http://localhost:3000")
-  // Override this block in each environment without touching app code.
   window.__ENV__ = window.__ENV__ || {};
   window.__ENV__.SERVICE_URL = window.__ENV__.SERVICE_URL || '/api';
 </script>
 
 <script src="./js/app.js"></script>
 
-</body></html>
+</body>
+</html>
