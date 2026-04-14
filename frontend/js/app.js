@@ -1190,11 +1190,17 @@ function renderUsersList() {
         return;
     }
     usersList.forEach(u => {
-        const item = document.createElement('div');
-        item.className = 'user-item';
+        const wrap = document.createElement('div');
+        wrap.dataset.userId = u.id;
+
         const deptLabel = u.department_name
             ? `<span style="font-size:10px;padding:2px 7px;border-radius:99px;background:color-mix(in srgb,${u.department_color||'#6366f1'} 15%,transparent);color:${u.department_color||'#6366f1'};border:1px solid color-mix(in srgb,${u.department_color||'#6366f1'} 30%,transparent);font-weight:600;">${escHtml(u.department_name)}</span>`
-            : '';
+            : '<span style="font-size:10px;color:var(--text-muted);">Sin depto.</span>';
+
+        // Main row
+        const item = document.createElement('div');
+        item.className = 'user-item';
+        item.style.cursor = 'default';
         item.innerHTML = `
             <div class="user-avatar" style="background:${u.avatar_color}">${escHtml(u.name.charAt(0).toUpperCase())}</div>
             <div class="user-info">
@@ -1202,9 +1208,110 @@ function renderUsersList() {
                 <div class="user-email">${escHtml(u.email)}</div>
             </div>
             <span class="user-role-badge ${u.role === 'admin' ? 'admin' : ''}">${u.role}</span>
+            <button class="col-action-btn" title="Editar usuario" onclick="toggleUserEdit(${u.id})" style="font-size:14px;">✎</button>
             <button class="delete-btn" title="Eliminar usuario" onclick="deleteUser(${u.id})">×</button>`;
-        list.appendChild(item);
+
+        // Edit form (hidden by default)
+        const form = document.createElement('div');
+        form.id = `userEditForm_${u.id}`;
+        form.style.cssText = 'display:none;background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px;margin-top:4px;';
+
+        // Build dept options html
+        const deptOpts = deptsList.map(d =>
+            `<option value="${d.id}" ${u.department_id == d.id ? 'selected' : ''}>${escHtml(d.name)}</option>`
+        ).join('');
+
+        form.innerHTML = `
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
+                <div class="ctrl-group">
+                    <span class="ctrl-label">Nombre</span>
+                    <input type="text" id="eun_${u.id}" value="${escHtml(u.name)}" style="padding:7px 10px;font-size:13px;">
+                </div>
+                <div class="ctrl-group">
+                    <span class="ctrl-label">Email</span>
+                    <input type="email" id="eue_${u.id}" value="${escHtml(u.email)}" style="padding:7px 10px;font-size:13px;">
+                </div>
+                <div class="ctrl-group">
+                    <span class="ctrl-label">Rol</span>
+                    <select id="eur_${u.id}" class="custom-select" style="padding:7px 10px;font-size:13px;">
+                        <option value="member" ${u.role==='member'?'selected':''}>Miembro</option>
+                        <option value="admin" ${u.role==='admin'?'selected':''}>Admin</option>
+                    </select>
+                </div>
+                <div class="ctrl-group">
+                    <span class="ctrl-label">Departamento</span>
+                    <select id="eud_${u.id}" class="custom-select" style="padding:7px 10px;font-size:13px;">
+                        <option value="">Sin departamento</option>
+                        ${deptOpts}
+                    </select>
+                </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;">
+                <div class="ctrl-group" style="flex:0;">
+                    <span class="ctrl-label">Color avatar</span>
+                    <button id="euc_${u.id}" class="color-preview-btn"
+                        style="background:${u.avatar_color};width:32px;height:32px;"
+                        data-value="${u.avatar_color}"
+                        onclick="openColorPicker(this, this.dataset.value, c => { this.style.background=c; this.dataset.value=c; })"
+                        title="Color"></button>
+                </div>
+                <div class="ctrl-group" style="flex:0;">
+                    <span class="ctrl-label">Nueva contraseña</span>
+                    <input type="password" id="eup_${u.id}" placeholder="Dejar vacío = sin cambiar" style="padding:7px 10px;font-size:13px;width:160px;">
+                </div>
+                <div style="flex:1;"></div>
+                <button class="btn-secondary" onclick="toggleUserEdit(${u.id})" style="padding:7px 14px;font-size:13px;">Cancelar</button>
+                <button class="btn-add" onclick="saveEditUser(${u.id})" style="padding:7px 14px;font-size:13px;">💾 Guardar</button>
+            </div>`;
+
+        wrap.appendChild(item);
+        wrap.appendChild(form);
+        list.appendChild(wrap);
     });
+}
+
+function toggleUserEdit(id) {
+    const form = document.getElementById(`userEditForm_${id}`);
+    if (!form) return;
+    const isVisible = form.style.display !== 'none';
+    // Close all open forms
+    document.querySelectorAll('[id^="userEditForm_"]').forEach(f => f.style.display = 'none');
+    if (!isVisible) form.style.display = 'block';
+}
+
+async function saveEditUser(id) {
+    const name   = document.getElementById(`eun_${id}`)?.value.trim();
+    const email  = document.getElementById(`eue_${id}`)?.value.trim();
+    const role   = document.getElementById(`eur_${id}`)?.value;
+    const deptId = document.getElementById(`eud_${id}`)?.value || null;
+    const color  = document.getElementById(`euc_${id}`)?.dataset.value;
+    const pass   = document.getElementById(`eup_${id}`)?.value;
+    if (!name || !email) return showToast('⚠️ Nombre y email son requeridos', 'warn');
+    const payload = { name, email, role, avatar_color: color, department_id: deptId };
+    if (pass) payload.password = pass;
+    try {
+        const res = await fetch(`${USERS_API}/${id}`, {
+            method: 'PUT', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        if (res.ok) {
+            // Update local data
+            const u = usersList.find(x => x.id === id);
+            if (u) {
+                u.name = name; u.email = email; u.role = role;
+                u.avatar_color = color; u.department_id = deptId;
+                const dept = deptsList.find(d => d.id == deptId);
+                u.department_name  = dept?.name  || null;
+                u.department_color = dept?.color || null;
+            }
+            renderUsersList();
+            populateAssigneeSelects();
+            showToast(`✅ Usuario "${name}" actualizado`);
+        } else {
+            const err = await res.json();
+            showToast('⚠️ ' + (err.error || 'Error'), 'warn');
+        }
+    } catch(e) { showToast('⚠️ Error de conexión', 'warn'); }
 }
 
 function renderDeptsList() {
@@ -1216,15 +1323,76 @@ function renderDeptsList() {
         return;
     }
     deptsList.forEach(d => {
+        const wrap = document.createElement('div');
+        wrap.dataset.deptId = d.id;
+
+        // Main row
         const item = document.createElement('div');
         item.className = 'user-item';
-        item.style.display = 'flex'; item.style.alignItems = 'center'; item.style.gap = '10px';
         item.innerHTML = `
-            <div style="width:18px;height:18px;border-radius:50%;background:${d.color};border:2px solid rgba(255,255,255,.2);flex-shrink:0;"></div>
+            <div id="deptColorDot_${d.id}" style="width:18px;height:18px;border-radius:50%;background:${d.color};border:2px solid rgba(255,255,255,.2);flex-shrink:0;"></div>
             <span style="flex:1;font-weight:600;font-size:14px;">${escHtml(d.name)}</span>
+            <button class="col-action-btn" title="Editar departamento" onclick="toggleDeptEdit(${d.id})" style="font-size:14px;">✎</button>
             <button class="delete-btn" title="Eliminar departamento" onclick="deleteDept(${d.id})">×</button>`;
-        list.appendChild(item);
+
+        // Edit form
+        const form = document.createElement('div');
+        form.id = `deptEditForm_${d.id}`;
+        form.style.cssText = 'display:none;background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px;margin-top:4px;';
+        form.innerHTML = `
+            <div style="display:flex;gap:8px;align-items:flex-end;">
+                <div class="ctrl-group" style="flex:1;">
+                    <span class="ctrl-label">Nombre</span>
+                    <input type="text" id="edn_${d.id}" value="${escHtml(d.name)}" style="padding:7px 10px;font-size:13px;">
+                </div>
+                <div class="ctrl-group" style="flex:0;">
+                    <span class="ctrl-label">Color</span>
+                    <button id="edc_${d.id}" class="color-preview-btn"
+                        style="background:${d.color};width:32px;height:32px;"
+                        data-value="${d.color}"
+                        onclick="openColorPicker(this, this.dataset.value, c => { this.style.background=c; this.dataset.value=c; document.getElementById('deptColorDot_${d.id}').style.background=c; })"
+                        title="Color"></button>
+                </div>
+                <button class="btn-secondary" onclick="toggleDeptEdit(${d.id})" style="padding:7px 14px;font-size:13px;">Cancelar</button>
+                <button class="btn-add" onclick="saveEditDept(${d.id})" style="padding:7px 14px;font-size:13px;">💾 Guardar</button>
+            </div>`;
+
+        wrap.appendChild(item);
+        wrap.appendChild(form);
+        list.appendChild(wrap);
     });
+}
+
+function toggleDeptEdit(id) {
+    const form = document.getElementById(`deptEditForm_${id}`);
+    if (!form) return;
+    const isVisible = form.style.display !== 'none';
+    document.querySelectorAll('[id^="deptEditForm_"]').forEach(f => f.style.display = 'none');
+    if (!isVisible) form.style.display = 'block';
+}
+
+async function saveEditDept(id) {
+    const name  = document.getElementById(`edn_${id}`)?.value.trim();
+    const color = document.getElementById(`edc_${id}`)?.dataset.value;
+    if (!name) return showToast('⚠️ El nombre es requerido', 'warn');
+    try {
+        const res = await fetch(`${DEPTS_API}/${id}`, {
+            method: 'PUT', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, color })
+        });
+        if (res.ok) {
+            const d = deptsList.find(x => x.id === id);
+            if (d) { d.name = name; d.color = color; }
+            // Update users that belong to this dept
+            usersList.forEach(u => { if (u.department_id == id) { u.department_name = name; u.department_color = color; } });
+            renderDeptsList();
+            populateDeptSelect();
+            showToast(`✅ Departamento "${name}" actualizado`);
+        } else {
+            const err = await res.json();
+            showToast('⚠️ ' + (err.error || 'Error'), 'warn');
+        }
+    } catch(e) { showToast('⚠️ Error de conexión', 'warn'); }
 }
 
 async function createUser() {
