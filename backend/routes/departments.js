@@ -1,8 +1,7 @@
 const router = require('express').Router();
-const { auth, adminOnly } = require('../middleware/auth');
 
 module.exports = (pool) => {
-    // GET /departments — public (needed for selects)
+    // GET /departments — public
     router.get('/', async (req, res) => {
         try {
             const [rows] = await pool.query('SELECT * FROM departments ORDER BY name');
@@ -10,8 +9,8 @@ module.exports = (pool) => {
         } catch (e) { res.status(500).json({ error: e.message }); }
     });
 
-    // POST /departments — admin only
-    router.post('/', auth, adminOnly, async (req, res) => {
+    // POST /departments
+    router.post('/', async (req, res) => {
         const { name, color = '#6366f1' } = req.body;
         if (!name) return res.status(400).json({ error: 'Nombre requerido' });
         try {
@@ -26,8 +25,8 @@ module.exports = (pool) => {
         }
     });
 
-    // PUT /departments/:id — admin only
-    router.put('/:id', auth, adminOnly, async (req, res) => {
+    // PUT /departments/:id
+    router.put('/:id', async (req, res) => {
         const { id } = req.params;
         const { name, color } = req.body;
         try {
@@ -42,11 +41,10 @@ module.exports = (pool) => {
         } catch (e) { res.status(500).json({ error: e.message }); }
     });
 
-    // DELETE /departments/:id — admin only
-    router.delete('/:id', auth, adminOnly, async (req, res) => {
+    // DELETE /departments/:id
+    router.delete('/:id', async (req, res) => {
         const { id } = req.params;
         try {
-            // Unlink users from this department before deleting
             await pool.query('UPDATE users SET department_id = NULL WHERE department_id = ?', [id]);
             await pool.query('DELETE FROM departments WHERE id = ?', [id]);
             res.json({ message: 'Departamento eliminado' });
