@@ -32,6 +32,48 @@
     --m8:#fef3c7;--m9:#e0e7ff;--m10:#ccfbf1;--m11:#fecaca;
 }
 
+/* ─── LIGHT ROSE (Rosa coral) ───────────────────────── */
+[data-theme="light-rose"] {
+    --bg:          #fdf6f7;
+    --surface:     #ffffff;
+    --surface-2:   #fef0f1;
+    --border:      #f0d6da;
+    --text:        #2d1a1e;
+    --text-muted:  #9b6b74;
+    --accent:      #e0546a;
+    --accent-h:    #c73d53;
+    --accent-fg:   #ffffff;
+    --hdr-bg:      #7f1d2e;
+    --hdr-fg:      #fde8ec;
+    --today-bg:    rgba(224,84,106,.15);
+    --today-bd:    #e0546a;
+    --danger:      #b91c1c;
+    --m0:#fde8f0;--m1:#f3e8fd;--m2:#e8fdf0;--m3:#fdfde8;
+    --m4:#e8fbfd;--m5:#fde8e8;--m6:#fde8f6;--m7:#e8fdf5;
+    --m8:#fdf6e8;--m9:#eae8fd;--m10:#e8fbfd;--m11:#fee2e2;
+}
+
+/* ─── LIGHT SAGE (Verde salvia) ─────────────────────── */
+[data-theme="light-sage"] {
+    --bg:          #f3f7f4;
+    --surface:     #ffffff;
+    --surface-2:   #eef4ef;
+    --border:      #cfe0d2;
+    --text:        #1a2b1e;
+    --text-muted:  #6b8a72;
+    --accent:      #3a8c58;
+    --accent-h:    #2d7045;
+    --accent-fg:   #ffffff;
+    --hdr-bg:      #1e4d2e;
+    --hdr-fg:      #d4eddb;
+    --today-bg:    rgba(58,140,88,.15);
+    --today-bd:    #3a8c58;
+    --danger:      #c0392b;
+    --m0:#dbeafe;--m1:#ede9fe;--m2:#dcfce7;--m3:#fef9c3;
+    --m4:#ccfbf1;--m5:#ffe4e6;--m6:#fbcfe8;--m7:#d1fae5;
+    --m8:#fef3c7;--m9:#e0e7ff;--m10:#ccfbf1;--m11:#fecaca;
+}
+
 /* ─── DARK ───────────────────────────────────────────── */
 [data-theme="dark"] {
     --bg:          #0f1117;
